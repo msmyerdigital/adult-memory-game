@@ -10,8 +10,10 @@ interface LevelConfig {
   piecesCount: number;
   gridClass: string;
   cols: number;
-  imageUrl: string;
   title: string;
+  // We now store both image URLs so it adapts seamlessly
+  landscapeUrl: string;
+  portraitUrl: string;
 }
 
 const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
@@ -62,8 +64,9 @@ const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
     piecesCount,
     gridClass,
     cols,
-    imageUrl: `https://picsum.photos/id/${imageId}/800/500`,
     title: `Level ${lvl} of 100`,
+    landscapeUrl: `https://picsum.photos/id/${imageId}/800/500`, // Landscape for laptop
+    portraitUrl: `https://picsum.photos/id/${imageId}/500/800`,   // Portrait for phone
   };
 });
 
@@ -71,6 +74,7 @@ export default function PuzzleGame() {
   const router = useRouter();
   const [currentGlobalLevel, setCurrentGlobalLevel] = useState<number>(1);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [grid, setGrid] = useState<number[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [moves, setMoves] = useState<number>(0);
@@ -82,6 +86,13 @@ export default function PuzzleGame() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Check if screen is mobile size on load & resize
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
     const savedLevel = localStorage.getItem('puzzle_global_level');
     if (savedLevel) {
       const parsed = parseInt(savedLevel, 10);
@@ -92,6 +103,7 @@ export default function PuzzleGame() {
     setIsInitialized(true);
 
     return () => {
+      window.removeEventListener('resize', checkScreenSize);
       if (timerRef.current) clearTimeout(timerRef.current);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -247,6 +259,7 @@ export default function PuzzleGame() {
   const config = allLevelsData[currentGlobalLevel - 1];
   const totalCols = config.cols;
   const totalRows = Math.ceil(config.piecesCount / totalCols);
+  const activeImageUrl = isMobile ? config.portraitUrl : config.landscapeUrl;
 
   return (
     <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 flex flex-col justify-between overflow-hidden select-none">
@@ -272,10 +285,10 @@ export default function PuzzleGame() {
         </section>
       </div>
 
-      {/* Dynamic Board: Portrait on Mobile, Landscape on Laptop */}
+      {/* Dynamic Board: Portrait layout container on mobile, Landscape on laptop */}
       <section className="w-full flex-1 flex flex-col justify-center items-center py-1">
         <div 
-          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[72vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
+          className={`grid ${config.gridClass} gap-0.5 w-[92vw] h-[70vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
         >
           {grid.map((correctIndexForThisTile, currentIndexOnBoard) => {
             const isSelected = selectedIdx === currentIndexOnBoard;
@@ -304,7 +317,7 @@ export default function PuzzleGame() {
                 <div
                   className="w-full h-full"
                   style={{
-                    backgroundImage: `url(${config.imageUrl})`,
+                    backgroundImage: `url(${activeImageUrl})`,
                     backgroundSize: `${backgroundSizeX}% ${backgroundSizeY}%`,
                     backgroundPosition: `${backgroundPositionX}% ${backgroundPositionY}%`,
                     backgroundRepeat: 'no-repeat',
