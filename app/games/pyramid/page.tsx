@@ -256,14 +256,9 @@ export default function MathPyramidGame() {
     }, totalCascadeTime);
   };
 
-  // Handle number input processing (shared between physical keyboard and on-screen keypad)
+  // Handle number input processing
   const handleKeyPress = (key: string) => {
     if (!selectedCell || isWon || isCompletedState) return;
-
-    if (key === 'Backspace' || key === 'Clear') {
-      setUserInput((prev) => prev.slice(0, -1));
-      return;
-    }
 
     if (/^[0-9]$/.test(key)) {
       const nextInput = userInput + key;
@@ -294,7 +289,9 @@ export default function MathPyramidGame() {
       if (e.key >= '0' && e.key <= '9') {
         handleKeyPress(e.key);
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
-        handleKeyPress('Backspace');
+        if (selectedCell && !isWon && !isCompletedState) {
+          setUserInput((prev) => prev.slice(0, -1));
+        }
       }
     };
 
@@ -311,8 +308,6 @@ export default function MathPyramidGame() {
   if (!isInitialized) return null;
 
   const successRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
-  const showInstructions = currentGlobalLevel <= 5;
-  const useMultiplicationRules = currentGlobalLevel > 10;
 
   return (
     <main className="h-[100dvh] w-screen bg-[#FDFBF7] text-[#0F172A] p-2 md:p-4 flex flex-col justify-between overflow-hidden select-none relative box-border">
@@ -346,25 +341,8 @@ export default function MathPyramidGame() {
         </div>
       </section>
 
-      {/* Pyramid Container with Optional Instructions Side-by-Side (Desktop only for instructions) */}
-      <section className={`w-full mx-auto flex flex-col md:flex-row items-center justify-center gap-4 my-auto shrink-0 ${showInstructions ? 'max-w-2xl' : 'max-w-xs sm:max-w-sm'}`}>
-        
-        {/* Compact Instructions Panel (Hidden on mobile via hidden md:flex) */}
-        {showInstructions && (
-          <div className="hidden md:flex bg-white p-4 rounded-2xl shadow-sm border border-[#CBD5E1] flex-col gap-3 text-xs md:text-sm font-bold text-[#334155] w-60 shrink-0 animate-in fade-in duration-200">
-            <p className="text-[#0F172A] font-extrabold text-sm border-b border-[#E2E8F0] pb-1.5">How To Play</p>
-            <p className="text-xs font-semibold leading-relaxed text-[#1E293B]">
-              Each block in the upper row is calculated from the two blocks directly beneath it. 
-            </p>
-            <p className="text-xs font-semibold leading-relaxed text-[#1E293B]">
-              {useMultiplicationRules 
-                ? '✨ Higher levels mix both addition and multiplication rules!' 
-                : '➕ Standard rule: Add the two lower numbers together to get the block above.'}
-            </p>
-          </div>
-        )}
-
-        {/* Pyramid Board */}
+      {/* Pyramid Container */}
+      <section className="w-full max-w-xs sm:max-w-sm mx-auto flex flex-col items-center justify-center my-auto shrink-0">
         <div className={`flex flex-col items-center gap-2 w-full bg-white p-4 rounded-3xl border border-[#CBD5E1] shadow-sm max-w-xs ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
           {pyramid.map((row, rIdx) => (
             <div key={rIdx} className="flex gap-2 justify-center w-full">
@@ -391,34 +369,26 @@ export default function MathPyramidGame() {
             </div>
           ))}
         </div>
-
       </section>
 
-      {/* On-Screen Mobile Number Keypad (Visible on mobile/tablet to ensure number input capability) */}
+      {/* Universal Number Keypad (Always visible for all devices so input works reliably everywhere) */}
       <section className="w-full max-w-xs mx-auto grid grid-cols-5 gap-1.5 shrink-0 my-1">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
           <button
             key={num}
             onClick={() => handleKeyPress(num.toString())}
             disabled={!selectedCell || isWon || isCompletedState}
-            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-extrabold text-base py-2 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
+            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-extrabold text-base py-2.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
           >
             {num}
           </button>
         ))}
-        <button
-          onClick={() => handleKeyPress('Backspace')}
-          disabled={!selectedCell || isWon || isCompletedState}
-          className="col-span-5 bg-stone-200 hover:bg-stone-300 active:bg-stone-400 text-[#0F172A] font-bold text-xs py-1.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
-        >
-          <span>⌫ Clear / Delete</span>
-        </button>
       </section>
 
       {/* Footer Status Message */}
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-1 shrink-0">
         <div className="text-xs font-bold text-[#0F172A] bg-white px-4 py-1.5 rounded-xl shadow-sm border border-[#CBD5E1] text-center">
-          {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Select a missing cell (?) to begin'}
+          {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Use addition and multiplication to solve the pyramid!}
         </div>
       </div>
 
