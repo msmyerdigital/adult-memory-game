@@ -120,13 +120,13 @@ export default function PianoMemoryGame() {
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
       gain.gain.setValueAtTime(0.8, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start();
-      osc.stop(ctx.currentTime + 0.5);
+      osc.stop(ctx.currentTime + 0.35);
     } catch {
       // Audio fallback
     }
@@ -164,21 +164,21 @@ export default function PianoMemoryGame() {
 
         setTimeout(() => {
           setActiveNoteIndex(null);
-        }, 350);
-      }, (index + 1) * 700);
+        }, 220);
+      }, (index + 1) * 450);
     });
 
     setTimeout(() => {
       setIsPlayingSequence(false);
-    }, (seq.length + 1) * 700);
+    }, (seq.length + 1) * 450);
   };
 
-  const handleKeyClick = (noteIndex: number) => {
+  const handleKeyInteraction = (noteIndex: number) => {
     if (isPlayingSequence || gameState !== 'playing') return;
 
     setActiveNoteIndex(noteIndex);
     playSound(notes[noteIndex].freq);
-    setTimeout(() => setActiveNoteIndex(null), 250);
+    setTimeout(() => setActiveNoteIndex(null), 180);
 
     const updatedPlayerSeq = [...playerSequence, noteIndex];
     setPlayerSequence(updatedPlayerSeq);
@@ -196,7 +196,7 @@ export default function PianoMemoryGame() {
     if (updatedPlayerSeq.length === sequence.length) {
       setTimeout(() => {
         nextRound(sequence);
-      }, 1000);
+      }, 600);
     }
   };
 
@@ -310,8 +310,12 @@ export default function PianoMemoryGame() {
           {notes.map((note, index) => (
             <button
               key={note.keyName}
-              onClick={() => handleKeyClick(index)}
-              className={`w-full sm:flex-1 h-[21vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleKeyInteraction(index);
+              }}
+              onMouseDown={() => handleKeyInteraction(index)}
+              className={`w-full sm:flex-1 h-[21vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
