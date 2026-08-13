@@ -151,29 +151,29 @@ export default function GamesPage() {
   }, []);
 
   return (
-    <main className="h-dvh w-screen bg-[#F4F1EA] text-[#1C1917] p-2 md:p-3 flex flex-col justify-between overflow-hidden box-border font-serif select-none">
+    <main className="min-h-dvh w-screen bg-[#F4F1EA] text-[#1C1917] p-2 md:p-3 flex flex-col justify-between overflow-y-auto md:overflow-hidden box-border font-serif select-none">
       
       {/* Top Header container */}
-      <header className="w-full max-w-5xl mx-auto bg-[#FDFAF6] rounded-2xl shadow-sm border border-[#D6CFC7] overflow-hidden flex flex-col">
+      <header className="w-full max-w-5xl mx-auto bg-[#FDFAF6] rounded-2xl shadow-sm border border-[#D6CFC7] overflow-hidden flex flex-col shrink-0">
         
         {/* Main Navigation */}
-        <nav className="flex justify-between items-center px-6 py-2.5 border-b border-[#E6E0D5] bg-[#FDFAF6]">
-          <h1 className="text-xl font-normal tracking-wide text-[#1C1917] uppercase">Games Hub</h1>
+        <nav className="flex justify-between items-center px-4 md:px-6 py-2.5 border-b border-[#E6E0D5] bg-[#FDFAF6]">
+          <h1 className="text-lg md:text-xl font-normal tracking-wide text-[#1C1917] uppercase">Games Hub</h1>
           <div className="flex gap-2">
-            <Link href="/games" className="px-4 py-1.5 bg-[#1C1917] text-[#FAF8F5] rounded-xl text-sm font-medium tracking-wide shadow-2xs">Games</Link>
-            <Link href="/journal" className="px-4 py-1.5 bg-[#FDFAF6] border border-[#D6CFC7] text-[#44403C] hover:text-[#1C1917] rounded-xl text-sm font-medium tracking-wide shadow-2xs">Journal</Link>
+            <Link href="/games" className="px-3 md:px-4 py-1.5 bg-[#1C1917] text-[#FAF8F5] rounded-xl text-xs md:text-sm font-medium tracking-wide shadow-2xs">Games</Link>
+            <Link href="/journal" className="px-3 md:px-4 py-1.5 bg-[#FDFAF6] border border-[#D6CFC7] text-[#44403C] hover:text-[#1C1917] rounded-xl text-xs md:text-sm font-medium tracking-wide shadow-2xs">Journal</Link>
           </div>
         </nav>
 
         {/* Weather Submenu */}
-        <section className="bg-[#F5EFEB] px-5 py-2.5 flex flex-col gap-2 border-t border-[#E6E0D5]">
+        <section className="bg-[#F5EFEB] px-4 md:px-5 py-2.5 flex flex-col gap-2 border-t border-[#E6E0D5]">
           <div className="flex flex-wrap justify-between items-center gap-2">
-            <div className="flex items-center gap-2.5">
-              <span className="bg-[#292524] text-[#FDE047] px-3 py-1 rounded-xl font-semibold text-xs tracking-wider shadow-2xs border border-[#44403C]">📍 {locationName}</span>
-              <span className="text-sm md:text-base font-medium tracking-wider text-[#1C1917]">TODAY IS {currentDate.toUpperCase()}</span>
+            <div className="flex items-center gap-2">
+              <span className="bg-[#292524] text-[#FDE047] px-2.5 py-1 rounded-xl font-semibold text-[11px] md:text-xs tracking-wider shadow-2xs border border-[#44403C]">📍 {locationName}</span>
+              <span className="text-xs md:text-base font-medium tracking-wider text-[#1C1917] truncate max-w-[180px] md:max-w-none">TODAY IS {currentDate.toUpperCase()}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#B45309] text-[#FFFBEB] px-3 py-1 rounded-xl font-semibold text-sm tracking-wide shadow-2xs border border-[#92400E]">
-              <span className="text-base">⛅</span>
+            <div className="flex items-center gap-1.5 bg-[#B45309] text-[#FFFBEB] px-2.5 py-1 rounded-xl font-semibold text-xs md:text-sm tracking-wide shadow-2xs border border-[#92400E]">
+              <span className="text-sm md:text-base">⛅</span>
               <span>{weatherInfo}</span>
             </div>
           </div>
@@ -182,10 +182,10 @@ export default function GamesPage() {
           <div className="grid grid-cols-7 gap-1 bg-[#E7E2D8] p-1 rounded-xl border border-[#D6CFC7]">
             {weeklyForecast.map((day, idx) => (
               <div key={idx} className="flex flex-col items-center justify-center bg-[#FFFFFF] py-1 px-0.5 rounded-lg text-center border border-[#D6CFC7] shadow-2xs">
-                <span className="text-[11px] font-semibold text-[#1C1917] mb-0.5 tracking-tight leading-none truncate w-full">{day.date}</span>
+                <span className="text-[10px] md:text-[11px] font-semibold text-[#1C1917] mb-0.5 tracking-tight leading-none truncate w-full">{day.date}</span>
                 <div className="flex items-center justify-center gap-0.5 leading-none">
-                  <span className="text-xs">{getWeatherEmoji(day.condition)}</span>
-                  <span className="text-[11px] font-bold text-[#1C1917]">{day.maxTemp}°</span>
+                  <span className="text-[11px] md:text-xs">{getWeatherEmoji(day.condition)}</span>
+                  <span className="text-[10px] md:text-[11px] font-bold text-[#1C1917]">{day.maxTemp}°</span>
                 </div>
               </div>
             ))}
@@ -194,9 +194,9 @@ export default function GamesPage() {
 
       </header>
 
-      {/* Games List Grid */}
-      <section className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-1.5">
-        <div className="grid grid-cols-2 gap-2.5">
+      {/* Games List Grid (Responsive: 1 col on mobile, 2 cols on tablet/desktop) */}
+      <section className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center my-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2.5">
           {gamesList.map((game, i) => (
             <Link 
               key={i} 
@@ -205,7 +205,7 @@ export default function GamesPage() {
             >
               
               {/* Card Content Layout */}
-              <div className="flex p-3.5 gap-3.5 items-center">
+              <div className="flex p-3 md:p-3.5 gap-3 md:gap-3.5 items-center">
                 
                 {/* Picture Preview Container */}
                 <div className="relative w-24 h-20 md:w-28 md:h-20 rounded-xl overflow-hidden bg-[#F5EFEB] border border-[#D6CFC7] shrink-0 shadow-2xs group-hover:scale-[1.02] transition-transform">
@@ -224,7 +224,7 @@ export default function GamesPage() {
                     <span className="inline-block bg-[#E7E2D8] text-[#1C1917] px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wider uppercase border border-[#D6CFC7] mb-1">
                       {game.badge}
                     </span>
-                    <h3 className="text-base md:text-lg font-normal tracking-wide text-[#1C1917] truncate">{game.title}</h3>
+                    <h3 className="text-sm md:text-lg font-normal tracking-wide text-[#1C1917] truncate">{game.title}</h3>
                   </div>
                   <p className="text-xs text-[#44403C] font-normal leading-relaxed line-clamp-2">
                     {game.description}
@@ -233,10 +233,10 @@ export default function GamesPage() {
               </div>
 
               {/* Action Footer */}
-              <div className="px-3.5 py-2 bg-[#F5EFEB] border-t border-[#E6E0D5] flex items-center justify-end">
-                <span className="px-4 py-1.5 bg-[#1C1917] group-hover:bg-[#292524] text-[#FAF8F5] font-medium text-xs md:text-sm tracking-wide rounded-xl transition-all shadow-2xs flex items-center gap-1.5">
+              <div className="px-3 md:px-3.5 py-1.5 md:py-2 bg-[#F5EFEB] border-t border-[#E6E0D5] flex items-center justify-end">
+                <span className="px-3 md:px-4 py-1 md:py-1.5 bg-[#1C1917] group-hover:bg-[#292524] text-[#FAF8F5] font-medium text-xs md:text-sm tracking-wide rounded-xl transition-all shadow-2xs flex items-center gap-1.5">
                   <span>Play Game</span>
-                  <span className="text-sm font-normal">➔</span>
+                  <span className="text-xs md:text-sm font-normal">➔</span>
                 </span>
               </div>
 
