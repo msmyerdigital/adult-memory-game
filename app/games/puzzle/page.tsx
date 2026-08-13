@@ -11,7 +11,6 @@ interface LevelConfig {
   gridClass: string;
   cols: number;
   title: string;
-  // We now store both image URLs so it adapts seamlessly
   landscapeUrl: string;
   portraitUrl: string;
 }
@@ -65,8 +64,8 @@ const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
     gridClass,
     cols,
     title: `Level ${lvl} of 100`,
-    landscapeUrl: `https://picsum.photos/id/${imageId}/800/500`, // Landscape for laptop
-    portraitUrl: `https://picsum.photos/id/${imageId}/500/800`,   // Portrait for phone
+    landscapeUrl: `https://picsum.photos/id/${imageId}/800/500`,
+    portraitUrl: `https://picsum.photos/id/${imageId}/600/800`,
   };
 });
 
@@ -86,7 +85,6 @@ export default function PuzzleGame() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Check if screen is mobile size on load & resize
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -262,7 +260,7 @@ export default function PuzzleGame() {
   const activeImageUrl = isMobile ? config.portraitUrl : config.landscapeUrl;
 
   return (
-    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 flex flex-col justify-between overflow-hidden select-none">
+    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 sm:p-3 flex flex-col justify-between overflow-hidden select-none">
       
       {/* Top Navigation & Info Bars */}
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-1.5 shrink-0">
@@ -285,10 +283,10 @@ export default function PuzzleGame() {
         </section>
       </div>
 
-      {/* Dynamic Board: Portrait layout container on mobile, Landscape on laptop */}
+      {/* Board Container: Portrait vertical height on phone, Landscape rectangle on laptop */}
       <section className="w-full flex-1 flex flex-col justify-center items-center py-1">
         <div 
-          className={`grid ${config.gridClass} gap-0.5 w-[92vw] h-[70vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
+          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[68vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
         >
           {grid.map((correctIndexForThisTile, currentIndexOnBoard) => {
             const isSelected = selectedIdx === currentIndexOnBoard;
