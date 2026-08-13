@@ -242,11 +242,11 @@ export default function PianoMemoryGame() {
       ))}
 
       {/* Top Header & Navigation */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-2.5 py-1 rounded-md shadow-sm border border-stone-200 text-stone-900 shrink-0">
+      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-2.5 py-0.5 rounded-md shadow-sm border border-stone-200 text-stone-900 shrink-0">
         <h1 className="text-xs sm:text-base font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
         <div className="flex gap-1.5">
-          <Link href="/games" className="px-2.5 py-0.5 bg-black text-white rounded-md text-[11px] font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-2.5 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-md text-[11px] font-semibold transition-colors">Journal</Link>
+          <Link href="/games" className="px-2 py-0.5 bg-black text-white rounded-md text-[11px] font-semibold transition-colors">Games</Link>
+          <Link href="/journal" className="px-2 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-md text-[11px] font-semibold transition-colors">Journal</Link>
         </div>
       </nav>
 
@@ -264,17 +264,17 @@ export default function PianoMemoryGame() {
         <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Time: <span className="text-stone-900">{formatTime(timeLeft)}</span></p>
       </section>
 
-      {/* Main Piano Center Container (Takes available space flexibly, no scrolling) */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1.5 px-0.5 my-auto shrink-0">
+      {/* Main Piano Center Container */}
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1 px-0.5 my-auto shrink-0">
         
         {/* Dynamic Controls / Start / Feedback Box */}
-        <div className="bg-white px-3 py-1.5 rounded-md shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        <div className="bg-white px-3 py-1 rounded-md shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
           {gameState === 'won' ? (
             <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
               <div className="text-xs sm:text-base font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
               <button
                 onClick={handleNextLevelTransition}
-                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-0.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
               </button>
@@ -284,7 +284,7 @@ export default function PianoMemoryGame() {
               <div className="text-xs sm:text-sm font-bold text-stone-900">Oh, oh... try again! 🎵</div>
               <button
                 onClick={startGame}
-                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-0.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 RETRY LEVEL
               </button>
@@ -305,13 +305,13 @@ export default function PianoMemoryGame() {
           )}
         </div>
 
-        {/* Perfectly Fitted Piano Keyboard (Fills exact viewport space without overflowing) */}
-        <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex gap-1 sm:gap-2.5 w-full justify-center">
+        {/* Piano Keyboard: 2 rows on mobile (grid of 3 columns), 1 row on sm+ screens */}
+        <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 grid grid-cols-3 sm:flex gap-1.5 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 h-[48vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              className={`w-full sm:flex-1 h-[21vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
@@ -324,7 +324,7 @@ export default function PianoMemoryGame() {
       </section>
 
       {/* Footer Info */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center shrink-0">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center shrink-0 pb-0.5">
         {sessionWon ? (
           <div className="text-emerald-600 font-normal text-[10px] sm:text-xs bg-white px-2 py-0.5 rounded-md shadow-sm border border-stone-200 animate-bounce">
             Take a rest. You won. Redirecting to Journal...
