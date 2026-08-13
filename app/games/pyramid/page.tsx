@@ -305,42 +305,42 @@ export default function MathPyramidGame() {
   const successRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
 
   return (
-    <main className="h-[100dvh] w-screen bg-[#FDFBF7] text-[#0F172A] p-2 md:p-4 flex flex-col justify-between overflow-hidden select-none relative box-border">
+    <main className="h-[100dvh] w-screen max-w-[430px] mx-auto bg-[#FDFBF7] text-[#0F172A] p-2 flex flex-col justify-between overflow-hidden select-none relative box-border">
       
       {/* Top Header & Navigation */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-4 py-2 rounded-2xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
-        <h1 className="text-sm md:text-lg font-bold tracking-tight text-stone-900">Math Pyramid — Level {currentGlobalLevel}</h1>
-        <div className="flex gap-2">
-          <Link href="/games" className="px-3 py-1 bg-black text-white rounded-xl text-xs md:text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-3 py-1 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-xs md:text-sm font-semibold transition-colors">Journal</Link>
+      <nav className="w-full flex justify-between items-center bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
+        <h1 className="text-xs font-normal tracking-tight text-stone-900">Math Pyramid - Level {currentGlobalLevel}</h1>
+        <div className="flex gap-1.5">
+          <Link href="/games" className="px-2.5 py-0.5 bg-black text-white rounded-lg text-xs font-normal transition-colors">Games</Link>
+          <Link href="/journal" className="px-2.5 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs font-normal transition-colors">Journal</Link>
         </div>
       </nav>
 
       {/* Header & Stats Bar */}
-      <section className="w-full max-w-5xl mx-auto bg-white p-2.5 rounded-2xl shadow-sm border border-[#CBD5E1] grid grid-cols-4 gap-2 text-center shrink-0">
+      <section className="w-full bg-white p-2 rounded-xl shadow-sm border border-[#CBD5E1] grid grid-cols-4 gap-1 text-center shrink-0">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Level</p>
-          <h2 className="text-sm md:text-lg font-normal text-[#0F172A]">{currentGlobalLevel} / 100</h2>
+          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Level</p>
+          <h2 className="text-xs font-normal text-[#0F172A]">{currentGlobalLevel} / 100</h2>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Points</p>
-          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{totalPoints}</p>
+          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Points</p>
+          <p className="text-xs font-normal text-[#0F172A]">{totalPoints}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Wins</p>
-          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{gamesWon}</p>
+          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Wins</p>
+          <p className="text-xs font-normal text-[#0F172A]">{gamesWon}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Success Rate</p>
-          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{successRate}%</p>
+          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Success</p>
+          <p className="text-xs font-normal text-[#0F172A]">{successRate}%</p>
         </div>
       </section>
 
-      {/* Pyramid Container */}
-      <section className="w-full max-w-xs sm:max-w-sm mx-auto flex flex-col items-center justify-center my-auto shrink-0">
-        <div className={`flex flex-col items-center gap-2 w-full bg-white p-4 rounded-3xl border border-[#CBD5E1] shadow-sm max-w-xs ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+      {/* Pyramid Container - Expanded for Mobile Portrait */}
+      <section className="w-full flex-1 flex flex-col items-center justify-center my-1 shrink-0">
+        <div className={`flex flex-col items-center justify-center gap-3 w-full h-full bg-white p-4 rounded-2xl border border-[#CBD5E1] shadow-sm ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
           {pyramid.map((row, rIdx) => (
-            <div key={rIdx} className="flex gap-2 justify-center w-full">
+            <div key={rIdx} className="flex gap-3 justify-center w-full">
               {row.map((val, cIdx) => {
                 const isVisible = hiddenMask[rIdx][cIdx];
                 const isSelected = selectedCell?.row === rIdx && selectedCell?.col === cIdx;
@@ -349,7 +349,7 @@ export default function MathPyramidGame() {
                   <button
                     key={cIdx}
                     onClick={() => handleCellClick(rIdx, cIdx)}
-                    className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-normal text-lg md:text-2xl transition-all shadow-sm ${
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center font-normal text-2xl sm:text-3xl transition-all shadow-sm ${
                       isVisible
                         ? `${isCompletedState ? 'animate-bounce text-white bg-[#059669] border-[#059669]' : 'bg-[#F1F5F9] text-[#0F172A] border border-[#CBD5E1]'} cursor-default`
                         : isSelected
@@ -367,13 +367,13 @@ export default function MathPyramidGame() {
       </section>
 
       {/* Universal Number Keypad */}
-      <section className="w-full max-w-xs mx-auto grid grid-cols-5 gap-1.5 shrink-0 my-1">
+      <section className="w-full grid grid-cols-5 gap-1.5 shrink-0 my-1">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
           <button
             key={num}
             onClick={() => handleKeyPress(num.toString())}
             disabled={!selectedCell || isWon || isCompletedState}
-            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-normal text-base py-2.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
+            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-normal text-lg py-2.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
           >
             {num}
           </button>
@@ -381,8 +381,8 @@ export default function MathPyramidGame() {
       </section>
 
       {/* Footer Status Message */}
-      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-1 shrink-0">
-        <div className="text-xs font-normal text-[#0F172A] bg-white px-4 py-1.5 rounded-xl shadow-sm border border-[#CBD5E1] text-center">
+      <div className="w-full flex flex-col items-center justify-center pb-1 shrink-0">
+        <div className="text-[11px] font-normal text-[#0F172A] bg-white px-3 py-1 rounded-xl shadow-sm border border-[#CBD5E1] text-center w-full">
           {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Use addition and multiplication to solve the pyramid!'}
         </div>
       </div>
