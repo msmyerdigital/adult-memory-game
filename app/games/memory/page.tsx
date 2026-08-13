@@ -33,7 +33,9 @@ export default function ColorMemoryGame() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
   const [activeTileId, setActiveTileId] = useState<number | null>(null);
-  const [gameState, setGameState] = useState<'showing' | 'playing' | 'gameover' | 'won'>('showing');
+  
+  // States: 'idle' (waiting for user to press Play to start Level 1), 'showing', 'playing', 'gameover', 'won'
+  const [gameState, setGameState] = useState<'idle' | 'showing' | 'playing' | 'gameover' | 'won'>('idle');
 
   const [currentTileCount, setCurrentTileCount] = useState<number>(2);
 
@@ -46,7 +48,7 @@ export default function ColorMemoryGame() {
 
   const sequenceRef = useRef<number[]>([]);
   const currentIndexRef = useRef<number>(0);
-  const gameStateRef = useRef<string>('showing');
+  const gameStateRef = useRef<string>('idle');
   const currentTileCountRef = useRef<number>(2);
   const currentLevelRef = useRef<number>(1);
 
@@ -101,8 +103,19 @@ export default function ColorMemoryGame() {
     return 10;
   };
 
+  // Generate sequence silently on mount without playing automatically
   useEffect(() => {
-    initLevel(1);
+    const newSeq: number[] = [];
+    for (let i = 0; i < 10; i++) {
+      let nextTile: number;
+      do {
+        nextTile = Math.floor(Math.random() * tiles.length);
+      } while (i > 0 && nextTile === newSeq[i - 1]);
+      newSeq.push(nextTile);
+    }
+    setSequence(newSeq);
+    setCurrentTileCount(2);
+    setGameState('idle'); // Player must press Play
   }, []);
 
   useEffect(() => {
@@ -180,6 +193,10 @@ export default function ColorMemoryGame() {
     });
   };
 
+  const startLevelOne = () => {
+    playSequenceForCount(sequence, currentTileCount);
+  };
+
   const initLevel = (targetLevel: number) => {
     setCurrentLevel(targetLevel);
     const newSeq: number[] = [];
@@ -187,7 +204,7 @@ export default function ColorMemoryGame() {
       let nextTile: number;
       do {
         nextTile = Math.floor(Math.random() * tiles.length);
-      } while (i > 0 && nextTile === newSeq[i - 1]); // Ensure no tile repeats consecutively in a row
+      } while (i > 0 && nextTile === newSeq[i - 1]);
       newSeq.push(nextTile);
     }
     setSequence(newSeq);
@@ -299,9 +316,21 @@ export default function ColorMemoryGame() {
       {/* Main Container */}
       <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-2 px-1 my-auto shrink-0">
         
-        {/* Instruction Text at Top */}
-        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-sm text-center transition-all duration-300 shrink-0">
-          {gameState === 'showing' ? (
+        {/* Instruction Text & Play Button Container */}
+        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-sm text-center transition-all duration-300 shrink-0 gap-1.5">
+          {gameState === 'idle' ? (
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="text-xs sm:text-sm font-bold text-stone-800">
+                Ready to play Level 1?
+              </div>
+              <button
+                onClick={startLevelOne}
+                className="px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                Play
+              </button>
+            </div>
+          ) : gameState === 'showing' ? (
             <div className="text-xs sm:text-sm font-bold text-amber-700 animate-pulse">
               Watch and repeat
             </div>
