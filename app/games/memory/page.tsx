@@ -27,10 +27,7 @@ interface ConfettiPiece {
 export default function PianoMemoryGame() {
   const router = useRouter();
   
-  // Level tracking (Level 1, Level 2, Level 3)
   const [currentLevel, setCurrentLevel] = useState<number>(1);
-  
-  // Game state
   const [sequence, setSequence] = useState<number[]>([]);
   const [playerSequence, setPlayerSequence] = useState<number[]>([]);
   const [score, setScore] = useState<number>(0);
@@ -38,11 +35,9 @@ export default function PianoMemoryGame() {
   const [activeNoteIndex, setActiveNoteIndex] = useState<number | null>(null);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameover' | 'won'>('idle');
 
-  // Confetti state
   const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
 
-  // 5-minute timer tracking
-  const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes = 300 seconds
+  const [timeLeft, setTimeLeft] = useState<number>(300);
   const [sessionWon, setSessionWon] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -55,7 +50,6 @@ export default function PianoMemoryGame() {
     { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 active:bg-purple-700', activeColor: 'bg-purple-300' },
   ];
 
-  // 5-minute countdown timer effect
   useEffect(() => {
     if (gameState === 'playing' && !sessionWon) {
       timerRef.current = setInterval(() => {
@@ -80,7 +74,6 @@ export default function PianoMemoryGame() {
     };
   }, [gameState, sessionWon, router]);
 
-  // Elegant Confetti Animation Loop (Triggered upon winning 10 rounds)
   useEffect(() => {
     if (gameState === 'won') {
       const colors = ['#f43f5e', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#f472b6'];
@@ -150,7 +143,6 @@ export default function PianoMemoryGame() {
   };
 
   const nextRound = (currentSeq: number[]) => {
-    // Check if player reached 10 successful rounds
     if (currentSeq.length >= 10) {
       setGameState('won');
       return;
@@ -193,13 +185,11 @@ export default function PianoMemoryGame() {
 
     const currentIndex = updatedPlayerSeq.length - 1;
 
-    // Friendly error handler before 10 rounds
     if (updatedPlayerSeq[currentIndex] !== sequence[currentIndex]) {
       setGameState('gameover');
       return;
     }
 
-    // Correct note clicked: +1 point per correct note
     const newScore = score + 1;
     setScore(newScore);
 
@@ -229,9 +219,9 @@ export default function PianoMemoryGame() {
   };
 
   return (
-    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 md:p-3 flex flex-col justify-between overflow-hidden select-none relative">
+    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-1.5 md:p-3 flex flex-col justify-between overflow-hidden select-none relative">
       
-      {/* Elegant Confetti Rendering Layer */}
+      {/* Confetti Layer */}
       {confettiPieces.map((p) => (
         <div
           key={p.id}
@@ -252,64 +242,55 @@ export default function PianoMemoryGame() {
       ))}
 
       {/* Top Header & Navigation */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
-        <h1 className="text-sm sm:text-lg font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
-        <div className="flex gap-2">
-          <Link href="/games" className="px-3 sm:px-4 py-1.5 bg-black text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-3 sm:px-4 py-1.5 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-xs sm:text-sm font-semibold transition-colors">Journal</Link>
+      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
+        <h1 className="text-xs sm:text-lg font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
+        <div className="flex gap-1.5">
+          <Link href="/games" className="px-3 py-1 bg-black text-white rounded-lg text-xs sm:text-sm font-semibold transition-colors">Games</Link>
+          <Link href="/journal" className="px-3 py-1 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Journal</Link>
         </div>
       </nav>
 
       {/* Status Bar */}
-      <section className="w-full max-w-4xl mx-auto bg-white px-4 py-2 rounded-2xl shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
-        <p className="text-xs text-stone-600 font-normal">
-          Level {currentLevel} of 3
-        </p>
-        <p className="text-xs text-stone-600 font-normal">
+      <section className="w-full max-w-4xl mx-auto bg-white px-3 py-1 rounded-xl shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
+        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">Level {currentLevel} of 3</p>
+        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">
           Round: <span className="text-stone-900 font-bold">{sequence.length > 0 && gameState === 'playing' ? sequence.length : 0}/10</span>
         </p>
-        <p className="text-xs text-stone-600 font-normal">
-          Time: <span className="text-stone-900">{formatTime(timeLeft)}</span>
-        </p>
+        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">Time: <span className="text-stone-900">{formatTime(timeLeft)}</span></p>
       </section>
 
-      {/* Game Center Dashboard & Big Finger Friendly Piano Keyboard */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-3 px-1">
+      {/* Main Piano Center Container */}
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-2 px-0.5">
         
-        {/* Dynamic Dashboard Box */}
         {gameState !== 'playing' && (
-          <div className="bg-white px-5 py-3.5 rounded-2xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+          <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
             {gameState === 'won' ? (
-              <div className="flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
-                <div className="text-base sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
-                <p className="text-xs text-stone-600">
-                  Great memory skills! Ready for the next challenge?
-                </p>
+              <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+                <div className="text-sm sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
+                <p className="text-xs text-stone-600">Great memory skills! Ready for the next challenge?</p>
                 <button
                   onClick={handleNextLevelTransition}
-                  className="mt-2 px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                  className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
                 </button>
               </div>
             ) : gameState === 'gameover' ? (
-              <div className="flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
-                <div className="text-sm sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
-                <p className="text-xs text-stone-600">
-                  You reached round {sequence.length}. Give it another shot!
-                </p>
+              <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+                <div className="text-xs sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
+                <p className="text-xs text-stone-600">You reached round {sequence.length}. Give it another shot!</p>
                 <button
                   onClick={startGame}
-                  className="mt-2 px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                  className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   RETRY LEVEL
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center">
                 <button
                   onClick={startGame}
-                  className="px-6 py-2.5 bg-stone-900 text-white hover:bg-stone-800 rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                  className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   START LEVEL {currentLevel}
                 </button>
@@ -318,35 +299,35 @@ export default function PianoMemoryGame() {
           </div>
         )}
 
-        {/* Big Finger & Mobile Friendly Piano Keyboard (6 Keys: C, D, E, F, G, A) */}
-        <div className="bg-white p-3 sm:p-5 rounded-3xl shadow-sm border border-stone-200 flex gap-2 sm:gap-2.5 w-full justify-center">
+        {/* Big Finger & 90% Screen Height Piano Keyboard on Mobile */}
+        <div className="bg-white p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-stone-200 flex gap-1.5 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 min-h-[260px] sm:h-80 rounded-2xl flex flex-col justify-between items-center pb-6 pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              className={`flex-1 h-[78vh] sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-4 sm:pb-6 pt-3 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
               <span className="text-xs sm:text-base opacity-95 font-medium">{note.keyName}</span>
-              <span className="text-base sm:text-2xl font-black">{note.label}</span>
+              <span className="text-sm sm:text-2xl font-black">{note.label}</span>
             </button>
           ))}
         </div>
 
       </section>
 
-      {/* Footer Status Message & Sound Note */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center pb-1 gap-1 shrink-0">
-        <div className="text-[11px] text-amber-700 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+      {/* Footer Info & Sound Note */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center pb-0.5 gap-0.5 shrink-0">
+        <div className="text-[10px] sm:text-[11px] text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
           🔊 Please make sure your sound / volume is turned on!
         </div>
         {sessionWon ? (
-          <div className="text-emerald-600 font-normal text-xs bg-white px-4 py-2 rounded-2xl shadow-sm border border-stone-200 animate-bounce">
+          <div className="text-emerald-600 font-normal text-[11px] sm:text-xs bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 animate-bounce">
             Take a rest. You won. Redirecting to Journal...
           </div>
         ) : (
-          <div className="text-[11px] text-stone-500 font-light text-center">
+          <div className="text-[10px] sm:text-[11px] text-stone-500 font-light text-center">
             {gameState === 'playing'
               ? (isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.')
               : 'Reach 10 successful rounds to clear the level.'}
