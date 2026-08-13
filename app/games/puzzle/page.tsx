@@ -272,10 +272,10 @@ export default function PuzzleGame() {
         </section>
       </div>
 
-      {/* Dynamic Board: Portrait on Mobile (fills height/width), Landscape on Laptop */}
+      {/* Dynamic Board: Portrait on Mobile, Landscape on Laptop */}
       <section className="w-full flex-1 flex flex-col justify-center items-center py-1">
         <div 
-          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[72vh] sm:w-[650px] sm:h-[380px] sm:max-w-none bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
+          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[72vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
         >
           {grid.map((correctIndexForThisTile, currentIndexOnBoard) => {
             const isSelected = selectedIdx === currentIndexOnBoard;
@@ -307,6 +307,7 @@ export default function PuzzleGame() {
                     backgroundImage: `url(${config.imageUrl})`,
                     backgroundSize: `${backgroundSizeX}% ${backgroundSizeY}%`,
                     backgroundPosition: `${backgroundPositionX}% ${backgroundPositionY}%`,
+                    backgroundRepeat: 'no-repeat',
                   }}
                 />
               </div>
