@@ -50,11 +50,10 @@ const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
     }
   }
 
-  // Curated Unsplash IDs featuring animals, nature, and people/families/crowds
   const imageIds = [
-    1025, 1074, 582, 659, 824, // Animals (dogs, wildlife)
-    1015, 1041, 1084, 119, 133, 177, 219, // Nature (landscapes, forests, mountains)
-    64, 433, 517, 888, 912, 1043, 1062, // People, families, crowds
+    1025, 1074, 582, 659, 824, 
+    1015, 1041, 1084, 119, 133, 177, 219, 
+    64, 433, 517, 888, 912, 1043, 1062, 
   ];
   const imageId = imageIds[(lvl - 1) % imageIds.length];
 
@@ -160,7 +159,7 @@ export default function PuzzleGame() {
         osc.stop(ctx.currentTime + idx * 0.12 + 0.3);
       });
     } catch {
-      // Audio context fallback or blocked user gesture
+      // Audio fallback
     }
   };
 
@@ -250,30 +249,33 @@ export default function PuzzleGame() {
   const totalRows = Math.ceil(config.piecesCount / totalCols);
 
   return (
-    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 md:p-3 flex flex-col justify-between overflow-hidden select-none relative">
+    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 flex flex-col justify-between overflow-hidden select-none">
       
-      <nav className="w-full max-w-5xl mx-auto flex justify-between items-center bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-stone-200 text-stone-900">
-        <h1 className="text-lg font-bold tracking-tight text-stone-900">Picture Puzzle — Level {currentGlobalLevel}</h1>
-        <div className="flex gap-2">
-          <Link href="/games" className="px-4 py-1.5 bg-black text-white rounded-xl text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-4 py-1.5 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-sm font-semibold transition-colors">Journal</Link>
-        </div>
-      </nav>
+      {/* Top Navigation & Info Bars */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col gap-1.5 shrink-0">
+        <nav className="w-full flex justify-between items-center bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 text-stone-900">
+          <h1 className="text-xs sm:text-base font-bold tracking-tight">Puzzle — Lvl {currentGlobalLevel}</h1>
+          <div className="flex gap-2">
+            <Link href="/games" className="px-3 py-1 bg-black text-white rounded-lg text-xs font-semibold">Games</Link>
+            <Link href="/journal" className="px-3 py-1 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs font-semibold">Journal</Link>
+          </div>
+        </nav>
 
-      <section className="w-full max-w-5xl mx-auto bg-[#FFFFFF] px-5 py-2.5 rounded-2xl shadow-sm border border-stone-200 flex justify-between items-center text-center">
-        <h2 className="text-base md:text-lg font-extrabold text-[#0F172A]">{config.title}</h2>
-        <p className="text-xs md:text-sm text-[#475569] font-normal">
-          Moves: <span className="font-bold text-[#0F172A]">{moves}</span>
-        </p>
-        <p className="text-xs md:text-sm text-[#475569] font-normal">
-          Time: <span className="font-bold text-[#0F172A]">{formatTimer(secondsElapsed)}</span>
-        </p>
-      </section>
+        <section className="w-full bg-[#FFFFFF] px-4 py-1.5 rounded-xl shadow-sm border border-stone-200 flex justify-between items-center text-center">
+          <h2 className="text-xs sm:text-sm font-extrabold text-[#0F172A]">{config.title}</h2>
+          <p className="text-xs sm:text-sm text-[#475569]">
+            Moves: <span className="font-bold text-[#0F172A]">{moves}</span>
+          </p>
+          <p className="text-xs sm:text-sm text-[#475569]">
+            Time: <span className="font-bold text-[#0F172A]">{formatTimer(secondsElapsed)}</span>
+          </p>
+        </section>
+      </div>
 
-      {/* Scaled down container by 10% */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto px-2">
+      {/* Dynamic Board: Portrait on Mobile (fills height/width), Landscape on Laptop */}
+      <section className="w-full flex-1 flex flex-col justify-center items-center py-1">
         <div 
-          className={`grid ${config.gridClass} gap-0 w-[90%] max-w-[calc(100vh*1.6*0.75)] aspect-[16/10] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-md`}
+          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[72vh] sm:w-[650px] sm:h-[380px] sm:max-w-none bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
         >
           {grid.map((correctIndexForThisTile, currentIndexOnBoard) => {
             const isSelected = selectedIdx === currentIndexOnBoard;
@@ -313,16 +315,17 @@ export default function PuzzleGame() {
         </div>
       </section>
 
-      <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center pb-1">
+      {/* Footer Instructions / Success Notice */}
+      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-1 shrink-0">
         {isWon ? (
-          <div className="text-[#0F172A] font-bold text-sm bg-[#FFFFFF] px-6 py-2.5 rounded-2xl shadow-sm border border-stone-200 animate-bounce">
+          <div className="text-[#0F172A] font-bold text-xs sm:text-sm bg-[#FFFFFF] px-6 py-2 rounded-xl shadow-sm border border-stone-200 animate-bounce text-center">
             🎉 Congratulations! {currentGlobalLevel % 3 === 0 || currentGlobalLevel === 100 
               ? 'Level complete! Taking you to Journal...' 
-              : 'Moving to the next level...'}
+              : 'Moving to next level...'}
           </div>
         ) : (
-          <div className="text-xs text-stone-500 font-light">
-            Drag and drop pieces anywhere, or tap two pieces to swap them
+          <div className="text-xs text-stone-500 font-light text-center">
+            Drag pieces or tap two to swap them
           </div>
         )}
       </div>
