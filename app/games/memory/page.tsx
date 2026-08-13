@@ -29,9 +29,8 @@ export default function PianoMemoryGame() {
   
   const [currentLevel, setCurrentLevel] = useState<number>(1);
   const [sequence, setSequence] = useState<number[]>([]);
-  const [playerSequence, setPlayerSequence] = useState<number[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
-  const [isPlayingSequence, setIsPlayingSequence] = useState<boolean>(false);
   const [activeNoteIndex, setActiveNoteIndex] = useState<number | null>(null);
   const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameover' | 'won'>('idle');
 
@@ -41,16 +40,14 @@ export default function PianoMemoryGame() {
   const [sessionWon, setSessionWon] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Use refs to keep track of state synchronously inside asynchronous timeout handlers
+  // Sync refs for handlers
   const sequenceRef = useRef<number[]>([]);
-  const playerSequenceRef = useRef<number[]>([]);
+  const currentIndexRef = useRef<number>(0);
   const gameStateRef = useRef<'idle' | 'playing' | 'gameover' | 'won'>('idle');
-  const isPlayingSequenceRef = useRef<boolean>(false);
 
   sequenceRef.current = sequence;
-  playerSequenceRef.current = playerSequence;
+  currentIndexRef.current = currentIndex;
   gameStateRef.current = gameState;
-  isPlayingSequenceRef.current = isPlayingSequence;
 
   const notes: Note[] = [
     { label: 'Do', keyName: 'C', freq: 261.63, color: 'bg-rose-600 active:bg-rose-700', activeColor: 'bg-rose-300' },
@@ -60,6 +57,17 @@ export default function PianoMemoryGame() {
     { label: 'Sol', keyName: 'G', freq: 392.00, color: 'bg-indigo-600 active:bg-indigo-700', activeColor: 'bg-indigo-300' },
     { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 active:bg-purple-700', activeColor: 'bg-purple-300' },
   ];
+
+  // Load saved level on mount
+  useEffect(() => {
+    const savedLevel = localStorage.getItem('piano_global_level');
+    if (savedLevel) {
+      const parsed = parseInt(savedLevel, 10);
+      if (!isNaN(parsed) && parsed >= 1 && parsed <= 100) {
+        setCurrentLevel(parsed);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (gameState === 'playing' && !sessionWon) {
@@ -85,10 +93,11 @@ export default function PianoMemoryGame() {
     };
   }, [gameState, sessionWon, router]);
 
+  // Confetti effect trigger whenever game state is 'won'
   useEffect(() => {
     if (gameState === 'won') {
       const colors = ['#f43f5e', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#f472b6'];
-      const pieces: ConfettiPiece[] = Array.from({ length: 60 }).map((_, i) => ({
+      const pieces: ConfettiPiece[] = Array.from({ length: 80 }).map((_, i) => ({
         id: i,
         x: Math.random() * window.innerWidth,
         y: -20 - Math.random() * 50,
@@ -145,86 +154,70 @@ export default function PianoMemoryGame() {
 
   const startGame = () => {
     setScore(0);
-    setPlayerSequence([]);
+    setCurrentIndex(0);
     setGameState('playing');
-    const randomNoteIndex = Math.floor(Math.random() * notes.length);
-    const newSeq = [randomNoteIndex];
-    setSequence(newSeq);
-    playSequence(newSeq);
-  };
+    
+    // First 3 levels have 6 notes. Each level after adds 2 extra notes, capping at 60 notes.
+    const sequenceLength = currentLevel <= 3 ? 6 : Math.min(60, 6 + (currentLevel - 3) * 2);
 
-  const nextRound = (currentSeq: number[]) => {
-    if (currentSeq.length >= 10) {
-      setGameState('won');
-      return;
+    const lullabyTemplates = [
+      [0, 0, 4, 4, 5, 5, 4], // Twinkle Twinkle Little Star Motif
+      [2, 4, 2, 4, 2, 5, 4, 3], // Brahms Lullaby Motif
+      [0, 2, 4, 5, 4, 2, 0, 1], // Gentle Scale Lullaby Motif
+    ];
+
+    const template = lullabyTemplates[(currentLevel - 1) % lullabyTemplates.length];
+    const newSeq: number[] = [];
+    for (let i = 0; i < sequenceLength; i++) {
+      newSeq.push(template[i % template.length]);
     }
-
-    setPlayerSequence([]);
-    const randomNoteIndex = Math.floor(Math.random() * notes.length);
-    const updatedSeq = [...currentSeq, randomNoteIndex];
-    setSequence(updatedSeq);
-    playSequence(updatedSeq);
-  };
-
-  const playSequence = (seq: number[]) => {
-    setIsPlayingSequence(true);
-    seq.forEach((noteIndex, index) => {
-      setTimeout(() => {
-        if (gameStateRef.current !== 'playing') return;
-        setActiveNoteIndex(noteIndex);
-        playSound(notes[noteIndex].freq);
-
-        setTimeout(() => {
-          setActiveNoteIndex(null);
-        }, 220);
-      }, (index + 1) * 450);
-    });
-
-    setTimeout(() => {
-      setIsPlayingSequence(false);
-    }, (seq.length + 1) * 450);
+    setSequence(newSeq);
   };
 
   const handleKeyInteraction = (noteIndex: number) => {
-    if (isPlayingSequenceRef.current || gameStateRef.current !== 'playing') return;
-
-    setActiveNoteIndex(noteIndex);
-    playSound(notes[noteIndex].freq);
-    setTimeout(() => setActiveNoteIndex(null), 180);
+    if (gameStateRef.current !== 'playing') return;
 
     const currentSeq = sequenceRef.current;
-    const updatedPlayerSeq = [...playerSequenceRef.current, noteIndex];
-    setPlayerSequence(updatedPlayerSeq);
+    const targetIdx = currentIndexRef.current;
 
-    const currentIndex = updatedPlayerSeq.length - 1;
+    if (noteIndex === currentSeq[targetIdx]) {
+      setActiveNoteIndex(noteIndex);
+      playSound(notes[noteIndex].freq);
+      setTimeout(() => setActiveNoteIndex(null), 180);
 
-    // Check if the current pressed note matches the sequence
-    if (updatedPlayerSeq[currentIndex] !== currentSeq[currentIndex]) {
+      const nextTarget = targetIdx + 1;
+      setScore(nextTarget);
+
+      if (nextTarget >= currentSeq.length) {
+        setGameState('won');
+      } else {
+        setCurrentIndex(nextTarget);
+      }
+    } else {
+      setActiveNoteIndex(noteIndex);
+      playSound(notes[noteIndex].freq);
+      setTimeout(() => setActiveNoteIndex(null), 180);
       setGameState('gameover');
-      return;
-    }
-
-    setScore((prev) => prev + 1);
-
-    // If player completed the full sequence for this round
-    if (updatedPlayerSeq.length === currentSeq.length) {
-      setTimeout(() => {
-        if (gameStateRef.current === 'playing') {
-          nextRound(currentSeq);
-        }
-      }, 600);
     }
   };
 
   const handleNextLevelTransition = () => {
-    if (currentLevel < 3) {
-      setCurrentLevel((prev) => prev + 1);
+    const nextLvl = currentLevel + 1;
+    const remainder = currentLevel % 3;
+    const isEndOfBatch = remainder === 0 || currentLevel === 100;
+
+    if (nextLvl <= 100) {
+      setCurrentLevel(nextLvl);
+      localStorage.setItem('piano_global_level', nextLvl.toString());
+    }
+
+    if (isEndOfBatch || nextLvl > 100) {
+      router.push('/journal');
+    } else {
       setGameState('idle');
       setScore(0);
       setSequence([]);
-      setPlayerSequence([]);
-    } else {
-      router.push('/journal');
+      setCurrentIndex(0);
     }
   };
 
@@ -233,6 +226,8 @@ export default function PianoMemoryGame() {
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+
+  const currentSeqLen = sequence.length > 0 ? sequence.length : (currentLevel <= 3 ? 6 : Math.min(60, 6 + (currentLevel - 3) * 2));
 
   return (
     <main className="h-[100dvh] w-screen bg-[#F7F6F3] text-[#1E293B] p-1 flex flex-col justify-between overflow-hidden select-none relative box-border">
@@ -259,7 +254,7 @@ export default function PianoMemoryGame() {
 
       {/* Top Header & Navigation */}
       <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-2.5 py-0.5 rounded-md shadow-sm border border-stone-200 text-stone-900 shrink-0">
-        <h1 className="text-xs sm:text-base font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
+        <h1 className="text-xs sm:text-base font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel} / 100</h1>
         <div className="flex gap-1.5">
           <Link href="/games" className="px-2 py-0.5 bg-black text-white rounded-md text-[11px] font-semibold transition-colors">Games</Link>
           <Link href="/journal" className="px-2 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-md text-[11px] font-semibold transition-colors">Journal</Link>
@@ -267,37 +262,38 @@ export default function PianoMemoryGame() {
       </nav>
 
       {/* Sound Instruction Banner at Top */}
-      <div className="w-full max-w-4xl mx-auto text-center text-[10px] sm:text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 shrink-0">
-        🔊 Make sure your device volume/sound is turned on!
+      <div className="w-full max-w-4xl mx-auto text-center text-[10px] sm:text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 shrink-0 font-semibold">
+        🔊 Please make sure the sound is on!
       </div>
 
       {/* Status Bar */}
       <section className="w-full max-w-4xl mx-auto bg-white px-3 py-0.5 rounded-md shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
-        <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Level {currentLevel} of 3</p>
+        <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Level {currentLevel}</p>
         <p className="text-[10px] sm:text-xs text-stone-600 font-normal">
-          Round: <span className="text-stone-900 font-bold">{sequence.length > 0 && gameState === 'playing' ? sequence.length : 0}/10</span>
+          Progress: <span className="text-stone-900 font-bold">{score}/{currentSeqLen}</span>
         </p>
         <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Time: <span className="text-stone-900">{formatTime(timeLeft)}</span></p>
       </section>
 
-      {/* Main Piano Center Container */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1 px-0.5 my-auto shrink-0">
+      {/* Main Container */}
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1.5 px-0.5 my-auto shrink-0">
         
         {/* Dynamic Controls / Start / Feedback Box */}
-        <div className="bg-white px-3 py-1 rounded-md shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
           {gameState === 'won' ? (
-            <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
-              <div className="text-xs sm:text-base font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
+            <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+              <div className="text-xs sm:text-base font-extrabold text-emerald-700">🎉 Congratulations! Level {currentLevel} Completed!</div>
+              <div className="text-[11px] text-stone-600">You played the sequence flawlessly.</div>
               <button
                 onClick={handleNextLevelTransition}
-                className="mt-0.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
-                {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
+                {currentLevel % 3 === 0 || currentLevel === 100 ? 'FINISH & VIEW JOURNAL' : `GO TO LEVEL ${currentLevel + 1}`}
               </button>
             </div>
           ) : gameState === 'gameover' ? (
             <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
-              <div className="text-xs sm:text-sm font-bold text-stone-900">Oh, oh... try again! 🎵</div>
+              <div className="text-xs sm:text-sm font-bold text-stone-900">Wrong note! Try again. 🎵</div>
               <button
                 onClick={startGame}
                 className="mt-0.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
@@ -306,42 +302,48 @@ export default function PianoMemoryGame() {
               </button>
             </div>
           ) : gameState === 'playing' ? (
-            <div className="text-[11px] sm:text-sm font-medium text-stone-800">
-              {isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.'}
+            <div className="text-xs sm:text-sm font-medium text-stone-800">
+              🎹 Follow the sequence ({currentSeqLen} notes)!
             </div>
           ) : (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center gap-1.5">
               <button
                 onClick={startGame}
-                className="px-4 py-1.5 bg-stone-900 text-white hover:bg-stone-800 rounded-md text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
               >
-                START LEVEL {currentLevel}
+                PLEASE PRESS PLAY
               </button>
             </div>
           )}
         </div>
 
-        {/* Piano Keyboard: 2 rows on mobile (grid of 3 columns), 1 row on sm+ screens */}
+        {/* Piano Keyboard Tiles */}
         <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 grid grid-cols-3 sm:flex gap-1.5 sm:gap-2.5 w-full justify-center">
-          {notes.map((note, index) => (
-            <button
-              key={note.keyName}
-              onTouchStart={(e) => {
-                e.preventDefault();
-                handleKeyInteraction(index);
-              }}
-              onMouseDown={(e) => {
-                e.preventDefault();
-                handleKeyInteraction(index);
-              }}
-              className={`w-full sm:flex-1 h-[21vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation ${
-                activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
-              }`}
-            >
-              <span className="text-[11px] sm:text-base opacity-95 font-medium">{note.keyName}</span>
-              <span className="text-xs sm:text-2xl font-black">{note.label}</span>
-            </button>
-          ))}
+          {notes.map((note, index) => {
+            const isTargetActive = gameState === 'playing' && sequence[currentIndex] === index;
+
+            return (
+              <button
+                key={note.keyName}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleKeyInteraction(index);
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleKeyInteraction(index);
+                }}
+                className={`w-full sm:flex-1 h-[22vh] sm:h-72 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation relative ${
+                  activeNoteIndex === index 
+                    ? `${note.activeColor} scale-95 shadow-inner brightness-110` 
+                    : `${note.color}`
+                } ${isTargetActive && gameState === 'playing' ? 'ring-4 ring-amber-400 ring-offset-2' : ''}`}
+              >
+                <span className="text-[11px] sm:text-base opacity-95 font-medium">{note.keyName}</span>
+                <span className="text-xs sm:text-2xl font-black">{note.label}</span>
+              </button>
+            );
+          })}
         </div>
 
       </section>
@@ -354,7 +356,7 @@ export default function PianoMemoryGame() {
           </div>
         ) : (
           <div className="text-[10px] sm:text-[11px] text-stone-500 font-light text-center">
-            {gameState !== 'playing' ? 'Reach 10 successful rounds to clear the level.' : 'Focus and follow the pattern!'}
+            {gameState !== 'playing' ? 'Complete 3 levels in this session before taking a journal break.' : 'Listen and repeat the notes!'}
           </div>
         )}
       </div>
