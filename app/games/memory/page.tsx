@@ -219,7 +219,7 @@ export default function PianoMemoryGame() {
   };
 
   return (
-    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-1.5 md:p-3 flex flex-col justify-between overflow-hidden select-none relative">
+    <main className="h-[100dvh] w-screen bg-[#F7F6F3] text-[#1E293B] p-1 flex flex-col justify-between overflow-hidden select-none relative box-border">
       
       {/* Confetti Layer */}
       {confettiPieces.map((p) => (
@@ -242,59 +242,62 @@ export default function PianoMemoryGame() {
       ))}
 
       {/* Top Header & Navigation */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
-        <h1 className="text-xs sm:text-lg font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
+      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-2.5 py-1 rounded-md shadow-sm border border-stone-200 text-stone-900 shrink-0">
+        <h1 className="text-xs sm:text-base font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
         <div className="flex gap-1.5">
-          <Link href="/games" className="px-3 py-1 bg-black text-white rounded-lg text-xs sm:text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-3 py-1 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs sm:text-sm font-semibold transition-colors">Journal</Link>
+          <Link href="/games" className="px-2.5 py-0.5 bg-black text-white rounded-md text-[11px] font-semibold transition-colors">Games</Link>
+          <Link href="/journal" className="px-2.5 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-md text-[11px] font-semibold transition-colors">Journal</Link>
         </div>
       </nav>
 
+      {/* Sound Instruction Banner at Top */}
+      <div className="w-full max-w-4xl mx-auto text-center text-[10px] sm:text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 shrink-0">
+        🔊 Make sure your device volume/sound is turned on!
+      </div>
+
       {/* Status Bar */}
-      <section className="w-full max-w-4xl mx-auto bg-white px-3 py-1 rounded-xl shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
-        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">Level {currentLevel} of 3</p>
-        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">
+      <section className="w-full max-w-4xl mx-auto bg-white px-3 py-0.5 rounded-md shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
+        <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Level {currentLevel} of 3</p>
+        <p className="text-[10px] sm:text-xs text-stone-600 font-normal">
           Round: <span className="text-stone-900 font-bold">{sequence.length > 0 && gameState === 'playing' ? sequence.length : 0}/10</span>
         </p>
-        <p className="text-[11px] sm:text-xs text-stone-600 font-normal">Time: <span className="text-stone-900">{formatTime(timeLeft)}</span></p>
+        <p className="text-[10px] sm:text-xs text-stone-600 font-normal">Time: <span className="text-stone-900">{formatTime(timeLeft)}</span></p>
       </section>
 
-      {/* Main Piano Center Container */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-2 px-0.5">
+      {/* Main Piano Center Container (Takes available space flexibly, no scrolling) */}
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1.5 px-0.5 my-auto shrink-0">
         
         {/* Dynamic Controls / Start / Feedback Box */}
-        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        <div className="bg-white px-3 py-1.5 rounded-md shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
           {gameState === 'won' ? (
-            <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
-              <div className="text-sm sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
-              <p className="text-xs text-stone-600">Great memory skills! Ready for the next challenge?</p>
+            <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
+              <div className="text-xs sm:text-base font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
               <button
                 onClick={handleNextLevelTransition}
-                className="mt-1 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
               </button>
             </div>
           ) : gameState === 'gameover' ? (
-            <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
-              <div className="text-xs sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
-              <p className="text-xs text-stone-600">You reached round {sequence.length}. Give it another shot!</p>
+            <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
+              <div className="text-xs sm:text-sm font-bold text-stone-900">Oh, oh... try again! 🎵</div>
               <button
                 onClick={startGame}
-                className="mt-1 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 RETRY LEVEL
               </button>
             </div>
           ) : gameState === 'playing' ? (
-            <div className="text-xs sm:text-sm font-medium text-stone-800">
+            <div className="text-[11px] sm:text-sm font-medium text-stone-800">
               {isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.'}
             </div>
           ) : (
             <div className="flex flex-col items-center">
               <button
                 onClick={startGame}
-                className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="px-4 py-1.5 bg-stone-900 text-white hover:bg-stone-800 rounded-md text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 START LEVEL {currentLevel}
               </button>
@@ -302,31 +305,28 @@ export default function PianoMemoryGame() {
           )}
         </div>
 
-        {/* 75% Screen Height Piano Keyboard on Mobile (No scrolling) */}
-        <div className="bg-white p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-stone-200 flex gap-1.5 sm:gap-2.5 w-full justify-center">
+        {/* Perfectly Fitted Piano Keyboard (Fills exact viewport space without overflowing) */}
+        <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex gap-1 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 h-[75vh] sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-3 sm:pb-6 pt-2.5 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              className={`flex-1 h-[48vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
-              <span className="text-xs sm:text-base opacity-95 font-medium">{note.keyName}</span>
-              <span className="text-sm sm:text-2xl font-black">{note.label}</span>
+              <span className="text-[11px] sm:text-base opacity-95 font-medium">{note.keyName}</span>
+              <span className="text-xs sm:text-2xl font-black">{note.label}</span>
             </button>
           ))}
         </div>
 
       </section>
 
-      {/* Footer Info & Sound Note */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center pb-0.5 gap-0.5 shrink-0">
-        <div className="text-[10px] sm:text-[11px] text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
-          🔊 Please make sure your sound / volume is turned on!
-        </div>
+      {/* Footer Info */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center shrink-0">
         {sessionWon ? (
-          <div className="text-emerald-600 font-normal text-[11px] sm:text-xs bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 animate-bounce">
+          <div className="text-emerald-600 font-normal text-[10px] sm:text-xs bg-white px-2 py-0.5 rounded-md shadow-sm border border-stone-200 animate-bounce">
             Take a rest. You won. Redirecting to Journal...
           </div>
         ) : (
