@@ -58,15 +58,20 @@ export default function PianoMemoryGame() {
     { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 active:bg-purple-700', activeColor: 'bg-purple-300' },
   ];
 
-  // Load saved level on mount
+  // Load saved level and auto-start game on mount or level change
   useEffect(() => {
     const savedLevel = localStorage.getItem('piano_global_level');
+    let lvl = currentLevel;
     if (savedLevel) {
       const parsed = parseInt(savedLevel, 10);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= 100) {
+        lvl = parsed;
         setCurrentLevel(parsed);
       }
     }
+    
+    // Automatically start the level
+    startLevel(lvl);
   }, []);
 
   useEffect(() => {
@@ -152,13 +157,13 @@ export default function PianoMemoryGame() {
     }
   };
 
-  const startGame = () => {
+  const startLevel = (targetLevel: number) => {
     setScore(0);
     setCurrentIndex(0);
     setGameState('playing');
     
     // First 3 levels have 6 notes. Each level after adds 2 extra notes, capping at 60 notes.
-    const sequenceLength = currentLevel <= 3 ? 6 : Math.min(60, 6 + (currentLevel - 3) * 2);
+    const sequenceLength = targetLevel <= 3 ? 6 : Math.min(60, 6 + (targetLevel - 3) * 2);
 
     const lullabyTemplates = [
       [0, 0, 4, 4, 5, 5, 4], // Twinkle Twinkle Little Star Motif
@@ -166,7 +171,7 @@ export default function PianoMemoryGame() {
       [0, 2, 4, 5, 4, 2, 0, 1], // Gentle Scale Lullaby Motif
     ];
 
-    const template = lullabyTemplates[(currentLevel - 1) % lullabyTemplates.length];
+    const template = lullabyTemplates[(targetLevel - 1) % lullabyTemplates.length];
     const newSeq: number[] = [];
     for (let i = 0; i < sequenceLength; i++) {
       newSeq.push(template[i % template.length]);
@@ -214,10 +219,7 @@ export default function PianoMemoryGame() {
     if (isEndOfBatch || nextLvl > 100) {
       router.push('/journal');
     } else {
-      setGameState('idle');
-      setScore(0);
-      setSequence([]);
-      setCurrentIndex(0);
+      startLevel(nextLvl);
     }
   };
 
@@ -278,8 +280,8 @@ export default function PianoMemoryGame() {
       {/* Main Container */}
       <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-1.5 px-0.5 my-auto shrink-0">
         
-        {/* Dynamic Controls / Start / Feedback Box */}
-        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        {/* Dynamic Controls / Feedback Box */}
+        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
           {gameState === 'won' ? (
             <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
               <div className="text-xs sm:text-base font-extrabold text-emerald-700">🎉 Congratulations! Level {currentLevel} Completed!</div>
@@ -295,30 +297,21 @@ export default function PianoMemoryGame() {
             <div className="flex flex-col items-center gap-0.5 animate-in fade-in zoom-in duration-300">
               <div className="text-xs sm:text-sm font-bold text-stone-900">Wrong note! Try again. 🎵</div>
               <button
-                onClick={startGame}
+                onClick={() => startLevel(currentLevel)}
                 className="mt-0.5 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-[11px] font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 RETRY LEVEL
               </button>
             </div>
-          ) : gameState === 'playing' ? (
+          ) : (
             <div className="text-xs sm:text-sm font-medium text-stone-800">
               🎹 Follow the sequence ({currentSeqLen} notes)!
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-1.5">
-              <button
-                onClick={startGame}
-                className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
-              >
-                PLEASE PRESS PLAY
-              </button>
             </div>
           )}
         </div>
 
-        {/* Piano Keyboard Tiles */}
-        <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 grid grid-cols-3 sm:flex gap-1.5 sm:gap-2.5 w-full justify-center">
+        {/* Piano Keyboard Tiles - Single Flex Row for All Devices */}
+        <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex flex-row gap-1 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => {
             const isTargetActive = gameState === 'playing' && sequence[currentIndex] === index;
 
@@ -333,14 +326,14 @@ export default function PianoMemoryGame() {
                   e.preventDefault();
                   handleKeyInteraction(index);
                 }}
-                className={`w-full sm:flex-1 h-[22vh] sm:h-72 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation relative ${
+                className={`flex-1 h-[22vh] sm:h-72 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation relative ${
                   activeNoteIndex === index 
                     ? `${note.activeColor} scale-95 shadow-inner brightness-110` 
                     : `${note.color}`
-                } ${isTargetActive && gameState === 'playing' ? 'ring-4 ring-amber-400 ring-offset-2' : ''}`}
+                } ${isTargetActive && gameState === 'playing' ? 'ring-4 ring-amber-400 ring-offset-1' : ''}`}
               >
-                <span className="text-[11px] sm:text-base opacity-95 font-medium">{note.keyName}</span>
-                <span className="text-xs sm:text-2xl font-black">{note.label}</span>
+                <span className="text-[10px] sm:text-base opacity-95 font-medium">{note.keyName}</span>
+                <span className="text-[11px] sm:text-2xl font-black">{note.label}</span>
               </button>
             );
           })}
