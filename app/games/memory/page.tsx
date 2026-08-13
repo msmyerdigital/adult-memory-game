@@ -40,7 +40,7 @@ export default function PianoMemoryGame() {
   const [sessionWon, setSessionWon] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync refs for handlers
+  // Sync refs for handlers to avoid stale closures in touch events
   const sequenceRef = useRef<number[]>([]);
   const currentIndexRef = useRef<number>(0);
   const gameStateRef = useRef<'idle' | 'playing' | 'gameover' | 'won'>('idle');
@@ -58,10 +58,10 @@ export default function PianoMemoryGame() {
     { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 active:bg-purple-700', activeColor: 'bg-purple-300' },
   ];
 
-  // Load saved level and auto-start game on mount or level change
+  // Load saved level and auto-start game on mount
   useEffect(() => {
     const savedLevel = localStorage.getItem('piano_global_level');
-    let lvl = currentLevel;
+    let lvl = 1;
     if (savedLevel) {
       const parsed = parseInt(savedLevel, 10);
       if (!isNaN(parsed) && parsed >= 1 && parsed <= 100) {
@@ -69,8 +69,6 @@ export default function PianoMemoryGame() {
         setCurrentLevel(parsed);
       }
     }
-    
-    // Automatically start the level
     startLevel(lvl);
   }, []);
 
@@ -138,6 +136,9 @@ export default function PianoMemoryGame() {
     try {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
       const ctx = new AudioContextClass();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -179,7 +180,8 @@ export default function PianoMemoryGame() {
     setSequence(newSeq);
   };
 
-  const handleKeyInteraction = (noteIndex: number) => {
+  const handleKeyInteraction = (noteIndex: number, e: React.UIEvent) => {
+    e.preventDefault(); // Stop mobile ghost clicks / double triggering
     if (gameStateRef.current !== 'playing') return;
 
     const currentSeq = sequenceRef.current;
@@ -310,7 +312,7 @@ export default function PianoMemoryGame() {
           )}
         </div>
 
-        {/* Piano Keyboard Tiles - Single Flex Row for All Devices */}
+        {/* Piano Keyboard Tiles - Using PointerDown to reliably handle mobile touch & desktop click uniformly */}
         <div className="bg-white p-2 sm:p-4 rounded-xl shadow-sm border border-stone-200 flex flex-row gap-1 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => {
             const isTargetActive = gameState === 'playing' && sequence[currentIndex] === index;
@@ -318,15 +320,8 @@ export default function PianoMemoryGame() {
             return (
               <button
                 key={note.keyName}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  handleKeyInteraction(index);
-                }}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleKeyInteraction(index);
-                }}
-                className={`flex-1 h-[22vh] sm:h-72 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation relative ${
+                onPointerDown={(e) => handleKeyInteraction(index, e)}
+                className={`flex-1 h-[22vh] sm:h-72 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-none relative ${
                   activeNoteIndex === index 
                     ? `${note.activeColor} scale-95 shadow-inner brightness-110` 
                     : `${note.color}`
