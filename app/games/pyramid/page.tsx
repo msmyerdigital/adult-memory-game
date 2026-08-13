@@ -22,7 +22,7 @@ export default function MathPyramidGame() {
   const [gamesPlayed, setGamesPlayed] = useState<number>(0);
   const [gamesWon, setGamesWon] = useState<number>(0);
 
-  // Load saved global level (1 to 100) and stats from localStorage safely on mount
+  // Load saved global level and stats from localStorage safely on mount
   useEffect(() => {
     const savedLevel = localStorage.getItem('pyramid_global_level');
     if (savedLevel) {
@@ -44,12 +44,11 @@ export default function MathPyramidGame() {
     setIsInitialized(true);
   }, []);
 
-  // Setup Math Pyramid board: First 4 levels easy, levels > 10 get multiplication and longer structure automatically
+  // Setup Math Pyramid board
   const setupBoard = (lvlNum: number) => {
     const isFirstFour = lvlNum <= 4;
     const useMultiplication = lvlNum > 10;
     
-    // Grid size: 3 rows for levels 1-10, scaling up to 4 rows after level 10
     const rows = lvlNum <= 10 ? 3 : 4;
 
     const bottomRowSize = rows;
@@ -58,7 +57,7 @@ export default function MathPyramidGame() {
     for (let i = 0; i < bottomRowSize; i++) {
       let maxVal = 5;
       if (isFirstFour) {
-        maxVal = 3 + lvlNum; // Levels 1-4 get slightly larger numbers (4 to 7)
+        maxVal = 3 + lvlNum;
       } else if (lvlNum <= 10) {
         maxVal = 6;
       } else if (lvlNum <= 40) {
@@ -75,7 +74,6 @@ export default function MathPyramidGame() {
       const currentRow = fullPyramid[r];
       const nextRow: number[] = [];
       for (let i = 0; i < currentRow.length - 1; i++) {
-        // After level 10, mix addition and multiplication dynamically behind the scenes
         const isMult = useMultiplication && (i + r) % 2 === 0;
         const val = isMult ? currentRow[i] * currentRow[i + 1] : currentRow[i] + currentRow[i + 1];
         nextRow.push(val);
@@ -88,7 +86,6 @@ export default function MathPyramidGame() {
     const mask = solvedPyramid.map((row) => row.map(() => true));
     let hiddenCount = 0;
     
-    // Gradually increase the number of hidden blanks as levels progress
     let targetHidden = 2;
     if (lvlNum > 4 && lvlNum <= 10) targetHidden = 3;
     else if (lvlNum > 10 && lvlNum <= 40) targetHidden = 4;
@@ -184,7 +181,6 @@ export default function MathPyramidGame() {
     }, 250);
   };
 
-  // Cascade effect: reveal cells sequentially from top to bottom before success state
   const revealBoardCascading = (finalMask: boolean[][]) => {
     const coords: { r: number; c: number }[] = [];
     finalMask.forEach((row, r) => {
@@ -256,7 +252,6 @@ export default function MathPyramidGame() {
     }, totalCascadeTime);
   };
 
-  // Handle number input processing
   const handleKeyPress = (key: string) => {
     if (!selectedCell || isWon || isCompletedState) return;
 
@@ -324,20 +319,20 @@ export default function MathPyramidGame() {
       {/* Header & Stats Bar */}
       <section className="w-full max-w-5xl mx-auto bg-white p-2.5 rounded-2xl shadow-sm border border-[#CBD5E1] grid grid-cols-4 gap-2 text-center shrink-0">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-bold">Level</p>
-          <h2 className="text-sm md:text-lg font-extrabold text-[#0F172A]">{currentGlobalLevel} / 100</h2>
+          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Level</p>
+          <h2 className="text-sm md:text-lg font-normal text-[#0F172A]">{currentGlobalLevel} / 100</h2>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-bold">Points</p>
-          <p className="text-sm md:text-lg font-extrabold text-[#0F172A]">{totalPoints}</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Points</p>
+          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{totalPoints}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-bold">Wins</p>
-          <p className="text-sm md:text-lg font-extrabold text-[#0F172A]">{gamesWon}</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Wins</p>
+          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{gamesWon}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-bold">Success Rate</p>
-          <p className="text-sm md:text-lg font-extrabold text-[#0F172A]">{successRate}%</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#475569] font-normal">Success Rate</p>
+          <p className="text-sm md:text-lg font-normal text-[#0F172A]">{successRate}%</p>
         </div>
       </section>
 
@@ -354,7 +349,7 @@ export default function MathPyramidGame() {
                   <button
                     key={cIdx}
                     onClick={() => handleCellClick(rIdx, cIdx)}
-                    className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-black text-lg md:text-2xl transition-all shadow-sm ${
+                    className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center font-normal text-lg md:text-2xl transition-all shadow-sm ${
                       isVisible
                         ? `${isCompletedState ? 'animate-bounce text-white bg-[#059669] border-[#059669]' : 'bg-[#F1F5F9] text-[#0F172A] border border-[#CBD5E1]'} cursor-default`
                         : isSelected
@@ -371,14 +366,14 @@ export default function MathPyramidGame() {
         </div>
       </section>
 
-      {/* Universal Number Keypad (Always visible for all devices so input works reliably everywhere) */}
+      {/* Universal Number Keypad */}
       <section className="w-full max-w-xs mx-auto grid grid-cols-5 gap-1.5 shrink-0 my-1">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
           <button
             key={num}
             onClick={() => handleKeyPress(num.toString())}
             disabled={!selectedCell || isWon || isCompletedState}
-            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-extrabold text-base py-2.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
+            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-normal text-base py-2.5 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
           >
             {num}
           </button>
@@ -387,8 +382,8 @@ export default function MathPyramidGame() {
 
       {/* Footer Status Message */}
       <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-1 shrink-0">
-        <div className="text-xs font-bold text-[#0F172A] bg-white px-4 py-1.5 rounded-xl shadow-sm border border-[#CBD5E1] text-center">
-          {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Use addition and multiplication to solve the pyramid!}
+        <div className="text-xs font-normal text-[#0F172A] bg-white px-4 py-1.5 rounded-xl shadow-sm border border-[#CBD5E1] text-center">
+          {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Use addition and multiplication to solve the pyramid!'}
         </div>
       </div>
 
@@ -396,13 +391,13 @@ export default function MathPyramidGame() {
       {isWon && (
         <div className="absolute inset-0 bg-[#0F172A]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-[#CBD5E1] flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-            <h3 className="text-2xl font-bold tracking-tight text-[#0F172A] mb-3">Congratulations!</h3>
+            <h3 className="text-2xl font-normal tracking-tight text-[#0F172A] mb-3">Congratulations!</h3>
             
-            <p className="text-base font-semibold text-[#334155] mb-6">
+            <p className="text-base font-normal text-[#334155] mb-6">
               Pyramid solved successfully!
             </p>
 
-            <div className="text-sm text-[#0F172A] font-bold bg-[#F1F5F9] px-5 py-3 rounded-2xl w-full border border-[#E2E8F0]">
+            <div className="text-sm text-[#0F172A] font-normal bg-[#F1F5F9] px-5 py-3 rounded-2xl w-full border border-[#E2E8F0]">
               {currentGlobalLevel % 3 === 0 || currentGlobalLevel === 100 
                 ? 'Session complete! Taking you to Journal...' 
                 : 'Loading next level...'}
