@@ -263,14 +263,14 @@ export default function PianoMemoryGame() {
       <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-2 px-0.5">
         
         {/* Dynamic Controls / Start / Feedback Box */}
-        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
           {gameState === 'won' ? (
             <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
               <div className="text-sm sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
               <p className="text-xs text-stone-600">Great memory skills! Ready for the next challenge?</p>
               <button
                 onClick={handleNextLevelTransition}
-                className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
               </button>
@@ -281,7 +281,7 @@ export default function PianoMemoryGame() {
               <p className="text-xs text-stone-600">You reached round {sequence.length}. Give it another shot!</p>
               <button
                 onClick={startGame}
-                className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 RETRY LEVEL
               </button>
@@ -302,13 +302,13 @@ export default function PianoMemoryGame() {
           )}
         </div>
 
-        {/* Shorter Piano Keyboard (No scrolling, compact height for mobile screens) */}
+        {/* 75% Screen Height Piano Keyboard on Mobile (No scrolling) */}
         <div className="bg-white p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-stone-200 flex gap-1.5 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 h-44 sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-3 sm:pb-6 pt-2.5 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              className={`flex-1 h-[75vh] sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-3 sm:pb-6 pt-2.5 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
