@@ -262,50 +262,53 @@ export default function PianoMemoryGame() {
       {/* Main Piano Center Container */}
       <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-2 px-0.5">
         
-        {gameState !== 'playing' && (
-          <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
-            {gameState === 'won' ? (
-              <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
-                <div className="text-sm sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
-                <p className="text-xs text-stone-600">Great memory skills! Ready for the next challenge?</p>
-                <button
-                  onClick={handleNextLevelTransition}
-                  className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
-                >
-                  {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
-                </button>
-              </div>
-            ) : gameState === 'gameover' ? (
-              <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
-                <div className="text-xs sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
-                <p className="text-xs text-stone-600">You reached round {sequence.length}. Give it another shot!</p>
-                <button
-                  onClick={startGame}
-                  className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
-                >
-                  RETRY LEVEL
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={startGame}
-                  className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
-                >
-                  START LEVEL {currentLevel}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Dynamic Controls / Start / Feedback Box */}
+        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+          {gameState === 'won' ? (
+            <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+              <div className="text-sm sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
+              <p className="text-xs text-stone-600">Great memory skills! Ready for the next challenge?</p>
+              <button
+                onClick={handleNextLevelTransition}
+                className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
+              </button>
+            </div>
+          ) : gameState === 'gameover' ? (
+            <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+              <div className="text-xs sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
+              <p className="text-xs text-stone-600">You reached round {sequence.length}. Give it another shot!</p>
+              <button
+                onClick={startGame}
+                className="mt-1.5 px-4 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                RETRY LEVEL
+              </button>
+            </div>
+          ) : gameState === 'playing' ? (
+            <div className="text-xs sm:text-sm font-medium text-stone-800">
+              {isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.'}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center">
+              <button
+                onClick={startGame}
+                className="px-5 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+              >
+                START LEVEL {currentLevel}
+              </button>
+            </div>
+          )}
+        </div>
 
-        {/* Big Finger & 90% Screen Height Piano Keyboard on Mobile */}
+        {/* Shorter Piano Keyboard (No scrolling, compact height for mobile screens) */}
         <div className="bg-white p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm border border-stone-200 flex gap-1.5 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 h-[78vh] sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-4 sm:pb-6 pt-3 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+              className={`flex-1 h-44 sm:h-80 rounded-xl sm:rounded-2xl flex flex-col justify-between items-center pb-3 sm:pb-6 pt-2.5 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
@@ -328,9 +331,7 @@ export default function PianoMemoryGame() {
           </div>
         ) : (
           <div className="text-[10px] sm:text-[11px] text-stone-500 font-light text-center">
-            {gameState === 'playing'
-              ? (isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.')
-              : 'Reach 10 successful rounds to clear the level.'}
+            {gameState !== 'playing' ? 'Reach 10 successful rounds to clear the level.' : 'Focus and follow the pattern!'}
           </div>
         )}
       </div>
