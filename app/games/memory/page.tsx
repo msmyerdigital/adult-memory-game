@@ -41,6 +41,17 @@ export default function PianoMemoryGame() {
   const [sessionWon, setSessionWon] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Use refs to keep track of state synchronously inside asynchronous timeout handlers
+  const sequenceRef = useRef<number[]>([]);
+  const playerSequenceRef = useRef<number[]>([]);
+  const gameStateRef = useRef<'idle' | 'playing' | 'gameover' | 'won'>('idle');
+  const isPlayingSequenceRef = useRef<boolean>(false);
+
+  sequenceRef.current = sequence;
+  playerSequenceRef.current = playerSequence;
+  gameStateRef.current = gameState;
+  isPlayingSequenceRef.current = isPlayingSequence;
+
   const notes: Note[] = [
     { label: 'Do', keyName: 'C', freq: 261.63, color: 'bg-rose-600 active:bg-rose-700', activeColor: 'bg-rose-300' },
     { label: 'Re', keyName: 'D', freq: 293.66, color: 'bg-amber-600 active:bg-amber-700', activeColor: 'bg-amber-300' },
@@ -159,6 +170,7 @@ export default function PianoMemoryGame() {
     setIsPlayingSequence(true);
     seq.forEach((noteIndex, index) => {
       setTimeout(() => {
+        if (gameStateRef.current !== 'playing') return;
         setActiveNoteIndex(noteIndex);
         playSound(notes[noteIndex].freq);
 
@@ -174,28 +186,32 @@ export default function PianoMemoryGame() {
   };
 
   const handleKeyInteraction = (noteIndex: number) => {
-    if (isPlayingSequence || gameState !== 'playing') return;
+    if (isPlayingSequenceRef.current || gameStateRef.current !== 'playing') return;
 
     setActiveNoteIndex(noteIndex);
     playSound(notes[noteIndex].freq);
     setTimeout(() => setActiveNoteIndex(null), 180);
 
-    const updatedPlayerSeq = [...playerSequence, noteIndex];
+    const currentSeq = sequenceRef.current;
+    const updatedPlayerSeq = [...playerSequenceRef.current, noteIndex];
     setPlayerSequence(updatedPlayerSeq);
 
     const currentIndex = updatedPlayerSeq.length - 1;
 
-    if (updatedPlayerSeq[currentIndex] !== sequence[currentIndex]) {
+    // Check if the current pressed note matches the sequence
+    if (updatedPlayerSeq[currentIndex] !== currentSeq[currentIndex]) {
       setGameState('gameover');
       return;
     }
 
-    const newScore = score + 1;
-    setScore(newScore);
+    setScore((prev) => prev + 1);
 
-    if (updatedPlayerSeq.length === sequence.length) {
+    // If player completed the full sequence for this round
+    if (updatedPlayerSeq.length === currentSeq.length) {
       setTimeout(() => {
-        nextRound(sequence);
+        if (gameStateRef.current === 'playing') {
+          nextRound(currentSeq);
+        }
       }, 600);
     }
   };
@@ -314,7 +330,10 @@ export default function PianoMemoryGame() {
                 e.preventDefault();
                 handleKeyInteraction(index);
               }}
-              onMouseDown={() => handleKeyInteraction(index)}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleKeyInteraction(index);
+              }}
               className={`w-full sm:flex-1 h-[21vh] sm:h-80 rounded-lg sm:rounded-2xl flex flex-col justify-between items-center pb-2 sm:pb-6 pt-2 sm:pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer touch-manipulation ${
                 activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
