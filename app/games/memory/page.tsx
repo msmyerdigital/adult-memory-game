@@ -10,7 +10,7 @@ interface ColorTile {
   color: string;
   activeColor: string;
   positionClass: string;
-  freq: number; // Pitch frequency for Web Audio API tone synthesizer
+  freq: number;
 }
 
 interface ConfettiPiece {
@@ -42,10 +42,8 @@ export default function ColorMemoryGame() {
   const [sessionWon, setSessionWon] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Web Audio Context reference for producing click/tap tones
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Sync refs for event handlers
   const sequenceRef = useRef<number[]>([]);
   const currentIndexRef = useRef<number>(0);
   const gameStateRef = useRef<string>('showing');
@@ -59,13 +57,12 @@ export default function ColorMemoryGame() {
   currentLevelRef.current = currentLevel;
 
   const tiles: ColorTile[] = [
-    { id: 0, name: 'Red', color: 'bg-rose-600', activeColor: 'bg-rose-300 brightness-125', positionClass: 'top-0 left-0 rounded-tl-full', freq: 329.63 },   // E4
-    { id: 1, name: 'Blue', color: 'bg-sky-600', activeColor: 'bg-sky-300 brightness-125', positionClass: 'top-0 right-0 rounded-tr-full', freq: 261.63 },  // C4
-    { id: 2, name: 'Green', color: 'bg-emerald-600', activeColor: 'bg-emerald-300 brightness-125', positionClass: 'bottom-0 left-0 rounded-bl-full', freq: 392.00 },// G4
-    { id: 3, name: 'Amber', color: 'bg-amber-500', activeColor: 'bg-amber-200 brightness-125', positionClass: 'bottom-0 right-0 rounded-br-full', freq: 523.25 }, // C5
+    { id: 0, name: 'Red', color: 'bg-rose-600', activeColor: 'bg-rose-300 brightness-125', positionClass: 'top-0 left-0 rounded-tl-full', freq: 329.63 },
+    { id: 1, name: 'Blue', color: 'bg-sky-600', activeColor: 'bg-sky-300 brightness-125', positionClass: 'top-0 right-0 rounded-tr-full', freq: 261.63 },
+    { id: 2, name: 'Green', color: 'bg-emerald-600', activeColor: 'bg-emerald-300 brightness-125', positionClass: 'bottom-0 left-0 rounded-bl-full', freq: 392.00 },
+    { id: 3, name: 'Amber', color: 'bg-amber-500', activeColor: 'bg-amber-200 brightness-125', positionClass: 'bottom-0 right-0 rounded-br-full', freq: 523.25 },
   ];
 
-  // Soft synth sound generator for tile taps
   const playTileSound = (tileId: number) => {
     try {
       if (!audioCtxRef.current) {
@@ -84,7 +81,6 @@ export default function ColorMemoryGame() {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(tiles[tileId].freq, ctx.currentTime);
 
-      // Soft envelope (fade in & fade out)
       gain.gain.setValueAtTime(0, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
@@ -128,7 +124,6 @@ export default function ColorMemoryGame() {
     };
   }, [sessionWon, router]);
 
-  // Confetti trigger on win (Pure confetti pieces, no balloons)
   useEffect(() => {
     if (gameState === 'won') {
       const colors = ['#f43f5e', '#38bdf8', '#34d399', '#fbbf24', '#a855f7'];
@@ -189,7 +184,11 @@ export default function ColorMemoryGame() {
     setCurrentLevel(targetLevel);
     const newSeq: number[] = [];
     for (let i = 0; i < 10; i++) {
-      newSeq.push(Math.floor(Math.random() * tiles.length));
+      let nextTile: number;
+      do {
+        nextTile = Math.floor(Math.random() * tiles.length);
+      } while (i > 0 && nextTile === newSeq[i - 1]); // Ensure no tile repeats consecutively in a row
+      newSeq.push(nextTile);
     }
     setSequence(newSeq);
     setCurrentTileCount(2);
@@ -298,10 +297,10 @@ export default function ColorMemoryGame() {
       </section>
 
       {/* Main Container */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-3 px-1 my-auto shrink-0">
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center gap-2 px-1 my-auto shrink-0">
         
         {/* Instruction Text at Top */}
-        <div className="bg-white px-4 py-2.5 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-sm text-center transition-all duration-300 shrink-0">
           {gameState === 'showing' ? (
             <div className="text-xs sm:text-sm font-bold text-amber-700 animate-pulse">
               Watch and repeat
@@ -315,7 +314,7 @@ export default function ColorMemoryGame() {
               <div className="text-xs sm:text-base font-extrabold text-emerald-700">🎉 Congratulations! Level {currentLevel} Completed! 🎉</div>
               <button
                 onClick={handleNextLevelTransition}
-                className="mt-1 px-3.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="mt-1 px-3 py-1 bg-stone-900 hover:bg-stone-800 text-white rounded-md text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
               >
                 {currentLevel === 3 ? 'FINISH & VIEW JOURNAL' : `GO TO LEVEL ${currentLevel + 1}`}
               </button>
@@ -327,8 +326,8 @@ export default function ColorMemoryGame() {
           )}
         </div>
 
-        {/* Maximized Circular Simon Board */}
-        <div className="relative w-[78vw] h-[78vw] max-w-[340px] max-h-[340px] sm:max-w-[400px] sm:max-h-[400px] rounded-full shadow-2xl border-4 border-stone-300 overflow-hidden bg-stone-200 my-1">
+        {/* Responsive Fluid Simon Board */}
+        <div className="relative w-[min(70vw,280px)] h-[min(70vw,280px)] sm:w-[340px] sm:h-[340px] rounded-full shadow-2xl border-4 border-stone-300 overflow-hidden bg-stone-200 my-1">
           {tiles.map((tile) => {
             const isActive = activeTileId === tile.id;
 
@@ -340,7 +339,7 @@ export default function ColorMemoryGame() {
                   isActive ? tile.activeColor + ' scale-[0.97] ring-4 ring-white z-20' : tile.color
                 }`}
               >
-                <span className="text-sm sm:text-base font-black text-white opacity-95 drop-shadow-md">{tile.name}</span>
+                <span className="text-xs sm:text-base font-black text-white opacity-95 drop-shadow-md">{tile.name}</span>
               </button>
             );
           })}
