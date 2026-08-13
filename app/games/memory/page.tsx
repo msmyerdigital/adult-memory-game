@@ -47,12 +47,12 @@ export default function PianoMemoryGame() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const notes: Note[] = [
-    { label: 'Do', keyName: 'C', freq: 261.63, color: 'bg-rose-600 hover:bg-rose-500', activeColor: 'bg-rose-300' },
-    { label: 'Re', keyName: 'D', freq: 293.66, color: 'bg-amber-600 hover:bg-amber-500', activeColor: 'bg-amber-300' },
-    { label: 'Mi', keyName: 'E', freq: 329.63, color: 'bg-emerald-600 hover:bg-emerald-500', activeColor: 'bg-emerald-300' },
-    { label: 'Fa', keyName: 'F', freq: 349.23, color: 'bg-sky-600 hover:bg-sky-500', activeColor: 'bg-sky-300' },
-    { label: 'Sol', keyName: 'G', freq: 392.00, color: 'bg-indigo-600 hover:bg-indigo-500', activeColor: 'bg-indigo-300' },
-    { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 hover:bg-purple-500', activeColor: 'bg-purple-300' },
+    { label: 'Do', keyName: 'C', freq: 261.63, color: 'bg-rose-600 active:bg-rose-700', activeColor: 'bg-rose-300' },
+    { label: 'Re', keyName: 'D', freq: 293.66, color: 'bg-amber-600 active:bg-amber-700', activeColor: 'bg-amber-300' },
+    { label: 'Mi', keyName: 'E', freq: 329.63, color: 'bg-emerald-600 active:bg-emerald-700', activeColor: 'bg-emerald-300' },
+    { label: 'Fa', keyName: 'F', freq: 349.23, color: 'bg-sky-600 active:bg-sky-700', activeColor: 'bg-sky-300' },
+    { label: 'Sol', keyName: 'G', freq: 392.00, color: 'bg-indigo-600 active:bg-indigo-700', activeColor: 'bg-indigo-300' },
+    { label: 'La', keyName: 'A', freq: 440.00, color: 'bg-purple-600 active:bg-purple-700', activeColor: 'bg-purple-300' },
   ];
 
   // 5-minute countdown timer effect
@@ -80,15 +80,15 @@ export default function PianoMemoryGame() {
     };
   }, [gameState, sessionWon, router]);
 
-  // Elegant Confetti Animation Loop
+  // Elegant Confetti Animation Loop (Triggered upon winning 10 rounds)
   useEffect(() => {
-    if (gameState === 'gameover') {
+    if (gameState === 'won') {
       const colors = ['#f43f5e', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#f472b6'];
-      const pieces: ConfettiPiece[] = Array.from({ length: 45 }).map((_, i) => ({
+      const pieces: ConfettiPiece[] = Array.from({ length: 60 }).map((_, i) => ({
         id: i,
         x: Math.random() * window.innerWidth,
         y: -20 - Math.random() * 50,
-        size: Math.floor(Math.random() * 8) + 6,
+        size: Math.floor(Math.random() * 10) + 6,
         color: colors[Math.floor(Math.random() * colors.length)],
         speedX: (Math.random() - 0.5) * 3,
         speedY: Math.random() * 3 + 2,
@@ -150,6 +150,12 @@ export default function PianoMemoryGame() {
   };
 
   const nextRound = (currentSeq: number[]) => {
+    // Check if player reached 10 successful rounds
+    if (currentSeq.length >= 10) {
+      setGameState('won');
+      return;
+    }
+
     setPlayerSequence([]);
     const randomNoteIndex = Math.floor(Math.random() * notes.length);
     const updatedSeq = [...currentSeq, randomNoteIndex];
@@ -166,13 +172,13 @@ export default function PianoMemoryGame() {
 
         setTimeout(() => {
           setActiveNoteIndex(null);
-        }, 300);
-      }, (index + 1) * 600);
+        }, 350);
+      }, (index + 1) * 700);
     });
 
     setTimeout(() => {
       setIsPlayingSequence(false);
-    }, (seq.length + 1) * 600);
+    }, (seq.length + 1) * 700);
   };
 
   const handleKeyClick = (noteIndex: number) => {
@@ -187,7 +193,7 @@ export default function PianoMemoryGame() {
 
     const currentIndex = updatedPlayerSeq.length - 1;
 
-    // Check if player clicked wrong note (Game Over / Fail trigger)
+    // Friendly error handler before 10 rounds
     if (updatedPlayerSeq[currentIndex] !== sequence[currentIndex]) {
       setGameState('gameover');
       return;
@@ -245,87 +251,105 @@ export default function PianoMemoryGame() {
         />
       ))}
 
-      {/* Top Header & Navigation - Black, White & Grey Theme */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-stone-200 text-stone-900">
-        <h1 className="text-lg font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
+      {/* Top Header & Navigation */}
+      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
+        <h1 className="text-sm sm:text-lg font-bold tracking-tight text-stone-900">Piano Memory — Level {currentLevel}</h1>
         <div className="flex gap-2">
-          <Link href="/games" className="px-4 py-1.5 bg-black text-white rounded-xl text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-4 py-1.5 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-sm font-semibold transition-colors">Journal</Link>
+          <Link href="/games" className="px-3 sm:px-4 py-1.5 bg-black text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors">Games</Link>
+          <Link href="/journal" className="px-3 sm:px-4 py-1.5 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-xs sm:text-sm font-semibold transition-colors">Journal</Link>
         </div>
       </nav>
 
-      {/* Clean Status Bar */}
-      <section className="w-full max-w-4xl mx-auto bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-stone-200 flex justify-between items-center text-center">
+      {/* Status Bar */}
+      <section className="w-full max-w-4xl mx-auto bg-white px-4 py-2 rounded-2xl shadow-sm border border-stone-200 flex justify-between items-center text-center shrink-0">
         <p className="text-xs text-stone-600 font-normal">
           Level {currentLevel} of 3
         </p>
         <p className="text-xs text-stone-600 font-normal">
-          Score: <span className="text-stone-900">{score} pts</span>
+          Round: <span className="text-stone-900 font-bold">{sequence.length > 0 && gameState === 'playing' ? sequence.length : 0}/10</span>
         </p>
         <p className="text-xs text-stone-600 font-normal">
-          Time Left: <span className="text-stone-900">{formatTime(timeLeft)}</span>
+          Time: <span className="text-stone-900">{formatTime(timeLeft)}</span>
         </p>
       </section>
 
-      {/* Game Center Dashboard & Extra Large Piano Keyboard Container */}
-      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-3.5 px-2">
+      {/* Game Center Dashboard & Big Finger Friendly Piano Keyboard */}
+      <section className="w-full max-w-4xl mx-auto flex flex-col justify-center items-center my-auto gap-3 px-1">
         
-        {/* Dynamic Dashboard Box (Hidden completely when actively playing) */}
+        {/* Dynamic Dashboard Box */}
         {gameState !== 'playing' && (
-          <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300">
-            {gameState === 'gameover' ? (
-              <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in duration-300">
-                <div className="text-lg font-normal text-stone-900"> Wonderful Job! </div>
-                <p className="text-xs font-normal text-stone-600">
-                  You scored <span className="text-stone-900">{score} points</span>. Let&apos;s try something else.
+          <div className="bg-white px-5 py-3.5 rounded-2xl shadow-sm border border-stone-200 flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 shrink-0">
+            {gameState === 'won' ? (
+              <div className="flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
+                <div className="text-base sm:text-lg font-bold text-stone-900">🎉 Fantastic! You completed 10 rounds!</div>
+                <p className="text-xs text-stone-600">
+                  Great memory skills! Ready for the next challenge?
                 </p>
                 <button
                   onClick={handleNextLevelTransition}
-                  className="mt-2 px-6 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                  className="mt-2 px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   {currentLevel < 3 ? `GO TO LEVEL ${currentLevel + 1}` : 'FINISH & VIEW JOURNAL'}
                 </button>
               </div>
+            ) : gameState === 'gameover' ? (
+              <div className="flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
+                <div className="text-sm sm:text-base font-bold text-stone-900">Oh, oh... try again! 🎵</div>
+                <p className="text-xs text-stone-600">
+                  You reached round {sequence.length}. Give it another shot!
+                </p>
+                <button
+                  onClick={startGame}
+                  className="mt-2 px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  RETRY LEVEL
+                </button>
+              </div>
             ) : (
-              <button
-                onClick={startGame}
-                className="px-6 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-xl text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
-              >
-                {gameState === 'idle' ? `START LEVEL ${currentLevel}` : 'RETRY LEVEL'}
-              </button>
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={startGame}
+                  className="px-6 py-2.5 bg-stone-900 text-white hover:bg-stone-800 rounded-xl text-xs sm:text-sm font-medium shadow-sm transition-all active:scale-95 cursor-pointer"
+                >
+                  START LEVEL {currentLevel}
+                </button>
+              </div>
             )}
           </div>
         )}
 
-        {/* Extra Large Piano Keyboard (Optimized for 6 keys: C, D, E, F, G, A) */}
-        <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-stone-200 flex gap-2.5 w-full justify-center">
+        {/* Big Finger & Mobile Friendly Piano Keyboard (6 Keys: C, D, E, F, G, A) */}
+        <div className="bg-white p-3 sm:p-5 rounded-3xl shadow-sm border border-stone-200 flex gap-2 sm:gap-2.5 w-full justify-center">
           {notes.map((note, index) => (
             <button
               key={note.keyName}
               onClick={() => handleKeyClick(index)}
-              className={`flex-1 h-72 md:h-80 rounded-2xl flex flex-col justify-between items-center pb-8 pt-6 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
-                activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color} hover:-translate-y-1`
+              className={`flex-1 min-h-[260px] sm:h-80 rounded-2xl flex flex-col justify-between items-center pb-6 pt-5 transition-all shadow-md border-2 border-stone-300 text-white cursor-pointer ${
+                activeNoteIndex === index ? `${note.activeColor} scale-95 shadow-inner brightness-110` : `${note.color}`
               }`}
             >
-              <span className="text-sm md:text-base opacity-95">{note.keyName}</span>
-              <span className="text-lg md:text-2xl font-black">{note.label}</span>
+              <span className="text-xs sm:text-base opacity-95 font-medium">{note.keyName}</span>
+              <span className="text-base sm:text-2xl font-black">{note.label}</span>
             </button>
           ))}
         </div>
 
       </section>
 
-      {/* Footer Status Message */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center pb-1">
+      {/* Footer Status Message & Sound Note */}
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center pb-1 gap-1 shrink-0">
+        <div className="text-[11px] text-amber-700 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+          🔊 Please make sure your sound / volume is turned on!
+        </div>
         {sessionWon ? (
           <div className="text-emerald-600 font-normal text-xs bg-white px-4 py-2 rounded-2xl shadow-sm border border-stone-200 animate-bounce">
-            take a rest. you won. Redirecting to Journal...
+            Take a rest. You won. Redirecting to Journal...
           </div>
         ) : (
-          <div className="text-[11px] text-stone-500 font-light">
+          <div className="text-[11px] text-stone-500 font-light text-center">
             {gameState === 'playing'
-              ? (isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody.')
-              : 'Play through Levels 1, 2, and 3 sequentially.'}
+              ? (isPlayingSequence ? '🎵 Listen to the melody...' : '🎹 Your turn! Repeat the melody up to 10 rounds.')
+              : 'Reach 10 successful rounds to clear the level.'}
           </div>
         )}
       </div>
