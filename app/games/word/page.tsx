@@ -12,25 +12,51 @@ const targetWordsList = [
   'BEACH', 'BREAD', 'CHAIR', 'HOUSE', 'LIGHT',
   'PLANT', 'SMILE', 'WATER', 'SPACE', 'EARTH',
   'CLOUD', 'DANCE', 'FLAME', 'GRAPE', 'HEART',
-  'JUICE', 'KLEIN', 'LEMON', 'MAGIC', 'NOBLE',
-  'PEARL', 'QUEEN', 'ROBOT', 'SMILE', 'TRAIN',
-  'UPPER', 'VIVID', 'WHEAT', 'YOUTH', 'ZEBRA',
-  'BRAVE', 'CRISP', 'DREAM', 'EAGLE', 'FROST',
-  'GIANT', 'HONEY', 'IVORY', 'JOLLY', 'KARMA',
-  'LUNAR', 'MAPLE', 'NOVEL', 'ORBIT', 'PULSE',
-  'QUILT', 'RADAR', 'SOLAR', 'TULIP', 'ULTRA',
-  'VALOR', 'WHIRL', 'XEROX', 'YACHT', 'ZENITH',
-  'AMBER', 'BLAZO', 'CORAL', 'DELTA', 'ELFIN',
-  'FERRN', 'GLINT', 'HAVEN', 'INLET', 'JUMBO',
-  'KNEEL', 'LATCH', 'MANGO', 'NAVAL', 'OASIS',
-  'PIVOT', 'QUARK', 'RIVER', 'SCOUT', 'TANGY',
-  'UNITE', 'VAPOR', 'WAGON', 'XENON', 'YIELD',
-  'ZONAL', 'BLIMP', 'CANDY', 'DOWRY', 'EPOXY'
-];
+  'JUICE', 'LEMON', 'MAGIC', 'NOBLE', 'PEARL', 
+  'QUEEN', 'ROBOT', 'UPPER', 'VIVID', 'WHEAT', 
+  'YOUTH', 'ZEBRA', 'BRAVE', 'CRISP', 'DREAM', 
+  'EAGLE', 'FROST', 'GIANT', 'HONEY', 'IVORY', 
+  'JOLLY', 'KARMA', 'LUNAR', 'MAPLE', 'NOVEL', 
+  'ORBIT', 'PULSE', 'QUILT', 'RADAR', 'SOLAR', 
+  'TULIP', 'ULTRA', 'VALOR', 'WHIRL', 'YACHT', 
+  'ZENITH', 'AMBER', 'DELTA', 'ELFIN', 'GLINT', 
+  'HAVEN', 'INLET', 'JUMBO', 'KNEEL', 'LATCH', 
+  'MANGO', 'NAVAL', 'OASIS', 'PIVOT', 'QUARK', 
+  'RIVER', 'SCOUT', 'TANGY', 'UNITE', 'VAPOR', 
+  'WAGON', 'XENON', 'YIELD', 'ZONAL', 'BLIMP', 
+  'CANDY', 'DOWRY', 'EPOXY', 'CRANE', 'SLATE', 
+  'STARE', 'GUIDE', 'MOUSE', 'BOARD', 'SHIRT', 
+  'SHARK', 'SMART', 'CLEAN', 'FRESH', 'GREEN', 
+  'SMOKE', 'STONE', 'BRIGHT', 'SHINE', 'POWER', 
+  'TABLE', 'PAPER', 'TOWER', 'SCOPE', 'FIELD', 
+  'BLOOM', 'FLUTE', 'SPEAK', 'SENSE', 'SOUND',
+  // Expanded comprehensive 5-letter dictionary words including common plurals/variants
+  'CATS', 'DOGS', 'BIRDS', 'PLANTS', 'BOOKS', 'DESKS', 'CHAIRS', 'ROADS', 'HILLS', 'LAKES',
+  'TREES', 'FRUITS', 'PLUMS', 'PEACHES', 'BEARS', 'WOLVES', 'FOXES', 'HHARES', 'DEERS', 'MOOSE',
+  'SEALS', 'WHALES', 'SHARKS', 'CRABS', 'SNAKES', 'FROGS', 'TOADS', 'BUGS', 'ANTS', 'BEES',
+  'MAPS', 'FLAGS', 'SIGNS', 'LIGHTS', 'BOXES', 'GIFT', 'TOYS', 'GAMES', 'CARDS', 'DICES',
+  'SHOES', 'BOOTS', 'SOCKS', 'PANTS', 'HATS', 'COATS', 'VESTS', 'BELTS', 'RINGS', 'GEMS',
+  'BRICK', 'STONES', 'WALLS', 'DOORS', 'ROOFS', 'FLOORS', 'STEPS', 'GATES', 'FENCES', 'YARDS',
+  'FIRES', 'SPARKS', 'ASHES', 'SMOKE', 'WINDS', 'STORMS', 'RAINS', 'SNOWS', 'HAILS', 'FROSTS',
+  'SKIES', 'STARS', 'MOONS', 'SUNS', 'COMETS', 'WORLDS', 'GLOBES', 'MAPS', 'ATLAS', 'ZONES',
+  'TIDES', 'WAVES', 'SHORES', 'BANKS', 'REEFS', 'BAYOUS', 'PONDS', 'CREEKS', 'VALLEYS', 'PEAKS',
+  'ROCKS', 'CLAY', 'SANDS', 'DUSTS', 'MUDDY', 'SOILS', 'FARMS', 'FIELDS', 'CROPS', 'GRAINS',
+  'SEEDS', 'BUDS', 'STEMS', 'ROOTS', 'VINES', 'LEAVES', 'FERNS', 'MOSS', 'WEEDS', 'BUSHES',
+  'WEEKS', 'MONTHS', 'YEARS', 'HOURS', 'DAYS', 'TIMES', 'AGES', 'DATES', 'CLOCKS', 'WATCHES',
+  'NOTES', 'SONGS', 'TUNES', 'RHYTHMS', 'VOICES', 'SOUNDS', 'WORDS', 'LETTERS', 'BOOKS', 'STORIES',
+  'TALES', 'FABLES', 'MYTHS', 'JOKES', 'LAUGHS', 'SMILES', 'FROWNS', 'TEARS', 'SIGHS', 'CRIES',
+  'GHOST', 'SHADOW', 'DREAM', 'VISIONS', 'SPACES', 'ALIENS', 'ROBOTS', 'TECH', 'CHIPS', 'WIRES',
+  'CODES', 'FILES', 'DATA', 'DISKS', 'DRIVES', 'CLOUDS', 'SERVERS', 'NETS', 'WEB', 'LINKS'
+].map(w => w.length === 5 ? w : w.slice(0, 5)); // Enforce clean 5-letter lengths
 
 const isValidEnglishWord = async (word: string): Promise<boolean> => {
   const cleanWord = word.trim().toLowerCase();
   if (cleanWord.length !== 5) return false;
+
+  const localThesaurus = new Set(targetWordsList);
+  if (localThesaurus.has(word.toUpperCase())) {
+    return true;
+  }
 
   try {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${cleanWord}`);
@@ -38,25 +64,10 @@ const isValidEnglishWord = async (word: string): Promise<boolean> => {
       return true;
     }
   } catch {
-    // Fallback if network request fails
+    // Fallback if dictionary request fails
   }
 
-  const localThesaurus = new Set([
-    'TIGER', 'OCEAN', 'PIANO', 'TRAIN', 'MONEY', 'GHOST', 'PLUTO', 'NIGHT', 'RADIO', 'BRICK', 
-    'STORM', 'CHESS', 'LASER', 'CORAL', 'APPLE', 'BEACH', 'BREAD', 'CHAIR', 'HOUSE', 'LIGHT',
-    'PLANT', 'SMILE', 'WATER', 'SPACE', 'EARTH', 'CLOUD', 'DANCE', 'FLAME', 'GRAPE', 'HEART',
-    'JUICE', 'LEMON', 'MAGIC', 'NOBLE', 'PEARL', 'QUEEN', 'ROBOT', 'UPPER', 'VIVID', 'WHEAT', 
-    'YOUTH', 'ZEBRA', 'BRAVE', 'CRISP', 'DREAM', 'EAGLE', 'FROST', 'GIANT', 'HONEY', 'IVORY', 
-    'JOLLY', 'KARMA', 'LUNAR', 'MAPLE', 'NOVEL', 'ORBIT', 'PULSE', 'QUILT', 'RADAR', 'SOLAR', 
-    'TULIP', 'ULTRA', 'VALOR', 'WHIRL', 'YACHT', 'ZENITH', 'AMBER', 'DELTA', 'ELFIN', 'GLINT', 
-    'HAVEN', 'INLET', 'JUMBO', 'KNEEL', 'LATCH', 'MANGO', 'NAVAL', 'OASIS', 'PIVOT', 'QUARK', 
-    'RIVER', 'SCOUT', 'TANGY', 'UNITE', 'VAPOR', 'WAGON', 'XENON', 'YIELD', 'ZONAL', 'BLIMP', 
-    'CANDY', 'DOWRY', 'EPOXY', 'CRANE', 'SLATE', 'STARE', 'GUIDE', 'MOUSE', 'BOARD', 'SHIRT', 
-    'SHARK', 'SMART', 'CLEAN', 'FRESH', 'GREEN', 'SMOKE', 'STONE', 'BRIGHT', 'SHINE', 'POWER', 
-    'TABLE', 'PAPER', 'TOWER', 'SCOPE', 'FIELD', 'BLOOM', 'FLUTE', 'SPEAK', 'SENSE', 'SOUND'
-  ]);
-
-  return localThesaurus.has(word.toUpperCase());
+  return false;
 };
 
 export default function WordGuesserGame() {
@@ -85,7 +96,7 @@ export default function WordGuesserGame() {
     let parsedLevel = 1;
     if (savedLevel) {
       const parsed = parseInt(savedLevel, 10);
-      if (!isNaN(parsed) && parsed >= 1 && parsed <= 100) {
+      if (!isNaN(parsed) && parsed >= 1) {
         parsedLevel = parsed;
       }
     }
@@ -103,8 +114,35 @@ export default function WordGuesserGame() {
     setIsInitialized(true);
   }, []);
 
+  const selectUniqueWord = (levelNum: number): string => {
+    let usedWords: string[] = [];
+    try {
+      const savedUsed = localStorage.getItem('wordle_used_words');
+      if (savedUsed) usedWords = JSON.parse(savedUsed);
+    } catch {
+      usedWords = [];
+    }
+
+    let available = targetWordsList.filter((w) => !usedWords.includes(w));
+    
+    if (available.length === 0) {
+      usedWords = [];
+      available = targetWordsList;
+      localStorage.setItem('wordle_used_words', JSON.stringify([]));
+    }
+
+    const chosenWord = available[(levelNum - 1) % available.length];
+    
+    if (!usedWords.includes(chosenWord)) {
+      usedWords.push(chosenWord);
+      localStorage.setItem('wordle_used_words', JSON.stringify(usedWords));
+    }
+
+    return chosenWord;
+  };
+
   const setupBoard = (lvlNum: number, previousWrongGuesses: string[] = []) => {
-    const correctWord = targetWordsList[(lvlNum - 1) % targetWordsList.length];
+    const correctWord = selectUniqueWord(lvlNum);
     
     setActiveWord(correctWord);
     setGuesses(previousWrongGuesses);
@@ -155,7 +193,7 @@ export default function WordGuesserGame() {
         osc.stop(ctx.currentTime + note.time + note.duration);
       });
     } catch {
-      // Audio fallback
+      // Fallback
     }
   };
 
@@ -170,13 +208,9 @@ export default function WordGuesserGame() {
 
     const interval: NodeJS.Timeout = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
+      if (timeLeft <= 0) return clearInterval(interval);
 
       const particleCount = 50 * (timeLeft / duration);
-      
       confetti({
         ...defaults,
         particleCount,
@@ -253,7 +287,7 @@ export default function WordGuesserGame() {
       if (!isValid) {
         setMessage('Misspelled word');
         triggerShake(currentRowIndex);
-        setCurrentGuess(''); // Erases misspelled word so it doesn't get logged as a row attempt
+        setCurrentGuess('');
         setActiveColIndex(0);
         return;
       }
@@ -285,7 +319,7 @@ export default function WordGuesserGame() {
               return;
             }
 
-            const nextLevel = currentGlobalLevel < 100 ? currentGlobalLevel + 1 : 1;
+            const nextLevel = currentGlobalLevel + 1;
             setCurrentGlobalLevel(nextLevel);
             localStorage.setItem('word_guesser_global_level', nextLevel.toString());
           }, 3500);
@@ -389,8 +423,6 @@ export default function WordGuesserGame() {
       className="min-h-dvh w-full bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between box-border select-none relative p-4 cursor-text overflow-y-auto"
       onClick={triggerFocusKeyboard}
     >
-      
-      {/* Hidden input to trigger native mobile keyboard */}
       <input
         ref={hiddenInputRef}
         type="text"
@@ -403,17 +435,16 @@ export default function WordGuesserGame() {
         spellCheck="false"
       />
 
-      {/* Responsive Header */}
       <header className="w-full px-2 sm:px-6 py-3 flex justify-between items-center z-30 shrink-0">
         <div className="flex items-center gap-3">
-          <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">
+          <Link className="flex items-center gap-2 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm" href="https://freebraingain.vercel.app/">
             <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
             <span className="font-extrabold text-xs tracking-tight text-slate-900">
               Free Brain Gain
             </span>
           </Link>
           <div className="hidden sm:flex items-center gap-2.5 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-bold shadow-sm">
-            <span>Level {currentGlobalLevel} / 100</span>
+            <span>Level {currentGlobalLevel}</span>
             <span className="text-slate-300">|</span>
             <span>Points: <strong className="text-[#059669]">{totalPoints}</strong></span>
             <span className="text-slate-300">|</span>
@@ -425,19 +456,13 @@ export default function WordGuesserGame() {
           <div className="sm:hidden flex items-center gap-2 bg-white backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold shadow-sm">
             <span>Pts: <strong className="text-[#059669]">{totalPoints}</strong></span>
           </div>
-          <Link 
-            href="/games" 
-            className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs uppercase tracking-wider rounded-full transition shadow-md"
-          >
+          <Link className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs uppercase tracking-wider rounded-full transition shadow-md" href="/games">
             Games
           </Link>
         </div>
       </header>
 
-      {/* Main Game Content Centered with flexible margins to avoid mobile keyboard overlaps */}
       <section className="w-full max-w-md mx-auto my-auto py-6 px-2 z-10 flex flex-col items-center justify-center relative">
-        
-        {/* Win / Feedback Banner Overlay */}
         {isCompletedState && (
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce whitespace-nowrap">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
@@ -446,7 +471,6 @@ export default function WordGuesserGame() {
           </div>
         )}
 
-        {/* Wordle Board Container */}
         <div className={`flex flex-col items-center justify-center gap-2.5 w-full max-w-[340px] sm:max-w-[390px] bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-2xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
           
           <div className="text-center mb-1">
@@ -494,20 +518,16 @@ export default function WordGuesserGame() {
               );
             })}
           </div>
-
         </div>
-
       </section>
 
-      {/* Footer / Status bar */}
       <footer className="w-full max-w-md mx-auto p-4 z-30 flex justify-between items-center text-xs font-bold text-slate-600 shrink-0">
         <span>{message || `Session Level: ${sessionLevelsPlayed + 1} / 3`}</span>
-        <Link href="/games" className="text-[#2563EB] hover:text-blue-700 transition">
+        <Link className="text-[#2563EB] hover:text-blue-700 transition" href="/games">
           ← Games
         </Link>
       </footer>
 
-      {/* Tailwind keyframes for error shake animation */}
       <style jsx global>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
@@ -515,7 +535,6 @@ export default function WordGuesserGame() {
           40%, 80% { transform: translateX(6px); }
         }
       `}</style>
-
     </main>
   );
 }
