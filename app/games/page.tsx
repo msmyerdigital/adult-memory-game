@@ -177,7 +177,7 @@ export default function GamesPage() {
   }, []);
 
   return (
-    <main className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border">
+    <main className="min-h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-y-auto box-border">
       
       {/* Top Professional Navigation Header */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 flex justify-between items-center shrink-0 shadow-xs">
@@ -204,11 +204,75 @@ export default function GamesPage() {
         </div>
       </header>
 
-      {/* Main Single-Screen Grid Layout */}
-      <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-3 flex-1 grid md:grid-cols-12 gap-4 items-stretch min-h-0">
+      {/* Main Responsive Grid Layout (Games first on mobile, weather second) */}
+      <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 grid md:grid-cols-12 gap-4 items-start">
         
-        {/* Column 1: Compact Weather Widget (4 cols) */}
-        <aside aria-label="Weather Forecast" className="md:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3.5 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
+        {/* Column 2 (Games Section): Appears first on mobile using `order-1 md:order-2`, 8 cols on desktop */}
+        <div className="md:col-span-8 order-1 md:order-2 flex flex-col gap-3 min-h-0">
+          
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-3 shadow-xs shrink-0 flex items-center justify-between">
+            <div>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
+                Cognitive Fitness Hub
+              </span>
+              <h1 className="text-sm sm:text-base font-black text-[#0F172A] mt-0.5">
+                Select a game to begin training
+              </h1>
+            </div>
+            <span className="text-xs font-bold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
+          </div>
+
+          {/* 4 Games Grid with Larger Image Containers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {gamesList.map((game, i) => (
+              <Link 
+                key={i} 
+                href={game.link}
+                className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
+                      {game.badge}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 items-center my-1">
+                    {/* Enlarged Image Box */}
+                    <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
+                      <Image 
+                        src={game.image} 
+                        alt={game.title} 
+                        fill 
+                        sizes="140px"
+                        className="object-cover group-hover:scale-110 transition-transform duration-300" 
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-base sm:text-lg font-black text-[#0F172A] group-hover:text-[#2563EB] transition leading-tight truncate">
+                        {game.title}
+                      </h2>
+                      <p className="text-xs text-[#475569] mt-1 font-medium leading-snug line-clamp-2">
+                        {game.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center mt-3">
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
+                  <span className="text-xs font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
+                    Play ➔
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+        </div>
+
+        {/* Column 1 (Weather Widget): Appears after games on mobile using `order-2 md:order-1`, 4 cols on desktop */}
+        <aside aria-label="Weather Forecast" className="md:col-span-4 order-2 md:order-1 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3.5 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
           <div>
             <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
               <span className="font-bold text-[#059669] text-xs">📍 {locationName}</span>
@@ -242,7 +306,7 @@ export default function GamesPage() {
           </div>
 
           {/* 5-Day Forecast */}
-          <div className="pt-2 border-t border-[#E2E8F0]">
+          <div className="pt-2 mt-2 border-t border-[#E2E8F0]">
             <p className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">5-Day Outlook</p>
             <div className="space-y-1">
               {dailyForecast.map((day, idx) => (
@@ -262,74 +326,10 @@ export default function GamesPage() {
           </div>
         </aside>
 
-        {/* Column 2: Prominent Games Section with Larger Images (8 cols) */}
-        <div className="md:col-span-8 flex flex-col justify-between gap-2.5 min-h-0">
-          
-          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-2.5 shadow-xs shrink-0 flex items-center justify-between">
-            <div>
-              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
-                Cognitive Fitness Hub
-              </span>
-              <h1 className="text-base font-black text-[#0F172A] mt-0.5">
-                Select a game to begin training
-              </h1>
-            </div>
-            <span className="text-xs font-bold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
-          </div>
-
-          {/* 4 Games Grid with Larger Image Containers */}
-          <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
-            {gamesList.map((game, i) => (
-              <Link 
-                key={i} 
-                href={game.link}
-                className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between block relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
-              >
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
-                      {game.badge}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-4 items-center my-1">
-                    {/* Enlarged Image Box */}
-                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
-                      <Image 
-                        src={game.image} 
-                        alt={game.title} 
-                        fill 
-                        sizes="140px"
-                        className="object-cover group-hover:scale-110 transition-transform duration-300" 
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-base sm:text-lg font-black text-[#0F172A] group-hover:text-[#2563EB] transition leading-tight truncate">
-                        {game.title}
-                      </h2>
-                      <p className="text-xs text-[#475569] mt-1 font-medium leading-snug line-clamp-2">
-                        {game.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center mt-2">
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
-                  <span className="text-xs font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
-                    Play ➔
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-        </div>
-
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0">
+      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0 mt-4">
         <p className="uppercase tracking-widest font-semibold">Free Brain Gain Portal</p>
         <p className="font-mono text-[#94A3B8]">© {new Date().getFullYear()}</p>
       </footer>
