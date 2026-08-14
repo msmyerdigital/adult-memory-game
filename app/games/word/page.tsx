@@ -253,7 +253,7 @@ export default function WordGuesserGame() {
       if (!isValid) {
         setMessage('Misspelled word');
         triggerShake(currentRowIndex);
-        setCurrentGuess('');
+        setCurrentGuess(''); // Erases misspelled word so it doesn't get logged as a row attempt
         setActiveColIndex(0);
         return;
       }
@@ -334,7 +334,6 @@ export default function WordGuesserGame() {
         handleKeyPress(lastChar);
       }
     }
-    // Reset hidden input value safely
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = '';
     }
@@ -387,7 +386,7 @@ export default function WordGuesserGame() {
 
   return (
     <main 
-      className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border select-none relative p-4 cursor-text"
+      className="min-h-dvh w-full bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between box-border select-none relative p-4 cursor-text overflow-y-auto"
       onClick={triggerFocusKeyboard}
     >
       
@@ -404,8 +403,8 @@ export default function WordGuesserGame() {
         spellCheck="false"
       />
 
-      {/* Floating Header */}
-      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-3 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center pointer-events-auto">
+      {/* Responsive Header */}
+      <header className="w-full px-2 sm:px-6 py-3 flex justify-between items-center z-30 shrink-0">
         <div className="flex items-center gap-3">
           <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
@@ -435,19 +434,19 @@ export default function WordGuesserGame() {
         </div>
       </header>
 
-      {/* Main Game Section with Larger Game Box */}
-      <section className="absolute inset-0 w-full h-full pt-16 pb-12 px-4 z-10 flex flex-col items-center justify-center">
+      {/* Main Game Content Centered with flexible margins to avoid mobile keyboard overlaps */}
+      <section className="w-full max-w-md mx-auto my-auto py-6 px-2 z-10 flex flex-col items-center justify-center relative">
         
         {/* Win / Feedback Banner Overlay */}
         {isCompletedState && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce whitespace-nowrap">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
               {gameStatus === 'won' ? '🎉 Word guessed! Loading next level...' : `The word was ${activeWord}`}
             </span>
           </div>
         )}
 
-        {/* Larger Wordle Board Container */}
+        {/* Wordle Board Container */}
         <div className={`flex flex-col items-center justify-center gap-2.5 w-full max-w-[340px] sm:max-w-[390px] bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-2xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
           
           <div className="text-center mb-1">
@@ -501,7 +500,7 @@ export default function WordGuesserGame() {
       </section>
 
       {/* Footer / Status bar */}
-      <footer className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center w-full max-w-md mx-auto pointer-events-auto text-xs font-bold text-slate-600">
+      <footer className="w-full max-w-md mx-auto p-4 z-30 flex justify-between items-center text-xs font-bold text-slate-600 shrink-0">
         <span>{message || `Session Level: ${sessionLevelsPlayed + 1} / 3`}</span>
         <Link href="/games" className="text-[#2563EB] hover:text-blue-700 transition">
           ← Games
