@@ -3,16 +3,28 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import confetti from 'canvas-confetti';
 
 interface LevelConfig {
   levelNumber: number;
   piecesCount: number;
   gridClass: string;
   cols: number;
+  rows: number;
   title: string;
   landscapeUrl: string;
   portraitUrl: string;
+}
+
+interface ConfettiPiece {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  speedX: number;
+  speedY: number;
+  rotation: number;
+  rotationSpeed: number;
 }
 
 const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
@@ -20,33 +32,40 @@ const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
   let piecesCount = 6;
   let gridClass = 'grid-cols-3 grid-rows-2';
   let cols = 3;
+  let rows = 2;
 
   if (lvl === 1) {
     piecesCount = 6;
     gridClass = 'grid-cols-3 grid-rows-2';
     cols = 3;
+    rows = 2;
   } else {
     const progressiveCount = 6 + Math.floor(((lvl - 1) / 99) * 6);
     piecesCount = Math.min(progressiveCount, 12);
     
     if (piecesCount <= 6) {
       cols = 3;
+      rows = 2;
       gridClass = 'grid-cols-3 grid-rows-2';
     } else if (piecesCount === 8) {
       cols = 4;
+      rows = 2;
       gridClass = 'grid-cols-4 grid-rows-2';
     } else if (piecesCount === 9) {
       cols = 3;
+      rows = 3;
       gridClass = 'grid-cols-3 grid-rows-3';
     } else if (piecesCount === 10) {
       cols = 5;
+      rows = 2;
       gridClass = 'grid-cols-5 grid-rows-2';
     } else if (piecesCount === 12) {
       cols = 4;
+      rows = 3;
       gridClass = 'grid-cols-4 grid-rows-3';
     } else {
       cols = 4;
-      const rows = Math.ceil(piecesCount / cols);
+      rows = Math.ceil(piecesCount / cols);
       gridClass = `grid-cols-4 grid-rows-${rows}`;
     }
   }
@@ -63,9 +82,10 @@ const allLevelsData: LevelConfig[] = Array.from({ length: 100 }, (_, i) => {
     piecesCount,
     gridClass,
     cols,
+    rows,
     title: `Level ${lvl} of 100`,
-    landscapeUrl: `https://picsum.photos/id/${imageId}/800/500`,
-    portraitUrl: `https://picsum.photos/id/${imageId}/600/800`,
+    landscapeUrl: `https://picsum.photos/id/${imageId}/1400/900`,
+    portraitUrl: `https://picsum.photos/id/${imageId}/900/1400`,
   };
 });
 
@@ -80,6 +100,7 @@ export default function PuzzleGame() {
   const [isWon, setIsWon] = useState<boolean>(false);
   
   const [secondsElapsed, setSecondsElapsed] = useState<number>(0);
+  const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -121,9 +142,45 @@ export default function PuzzleGame() {
     };
   }, [isInitialized, isWon]);
 
+  useEffect(() => {
+    if (isWon) {
+      const colors = ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED'];
+      const pieces: ConfettiPiece[] = Array.from({ length: 110 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * window.innerWidth,
+        y: -20 - Math.random() * 50,
+        size: Math.floor(Math.random() * 8) + 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speedX: (Math.random() - 0.5) * 3,
+        speedY: Math.random() * 3 + 2,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+      }));
+      setConfettiPieces(pieces);
+
+      const interval = setInterval(() => {
+        setConfettiPieces((prev) =>
+          prev
+            .map((p) => ({
+              ...p,
+              x: p.x + p.speedX,
+              y: p.y + p.speedY,
+              rotation: p.rotation + p.rotationSpeed,
+            }))
+            .filter((p) => p.y < window.innerHeight + 20)
+        );
+      }, 25);
+
+      return () => clearInterval(interval);
+    } else {
+      setConfettiPieces([]);
+    }
+  }, [isWon]);
+
   const setupBoard = useCallback((lvlNum: number) => {
     const config = allLevelsData[lvlNum - 1];
-    let initial = Array.from({ length: config.piecesCount }, (_, i) => i);
+    const totalSlots = config.cols * config.rows;
+    let initial = Array.from({ length: totalSlots }, (_, i) => i);
     
     for (let i = initial.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -178,12 +235,6 @@ export default function PuzzleGame() {
     if (hasWon) {
       setIsWon(true);
       playSuccessJingle();
-      
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
 
       timerRef.current = setTimeout(() => {
         const remainderInBatch = currentGlobalLevel % 3;
@@ -256,37 +307,79 @@ export default function PuzzleGame() {
 
   const config = allLevelsData[currentGlobalLevel - 1];
   const totalCols = config.cols;
-  const totalRows = Math.ceil(config.piecesCount / totalCols);
+  const totalRows = config.rows;
   const activeImageUrl = isMobile ? config.portraitUrl : config.landscapeUrl;
 
   return (
-    <main className="h-screen w-screen bg-[#F7F6F3] text-[#1E293B] p-2 sm:p-3 flex flex-col justify-between overflow-hidden select-none">
+    <main className="h-dvh w-screen bg-[#0F172A] text-[#F8FAFC] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border select-none relative">
       
-      {/* Top Navigation & Info Bars */}
-      <div className="w-full max-w-4xl mx-auto flex flex-col gap-1.5 shrink-0">
-        <nav className="w-full flex justify-between items-center bg-white px-4 py-2 rounded-xl shadow-sm border border-stone-200 text-stone-900">
-          <h1 className="text-xs sm:text-base font-bold tracking-tight">Puzzle — Lvl {currentGlobalLevel}</h1>
-          <div className="flex gap-2">
-            <Link href="/games" className="px-3 py-1 bg-black text-white rounded-lg text-xs font-semibold">Games</Link>
-            <Link href="/journal" className="px-3 py-1 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs font-semibold">Journal</Link>
+      {/* Confetti Layer */}
+      {confettiPieces.map((p) => (
+        <div
+          key={p.id}
+          style={{
+            position: 'absolute',
+            left: `${p.x}px`,
+            top: `${p.y}px`,
+            width: `${p.size}px`,
+            height: `${p.size * 0.6}px`,
+            backgroundColor: p.color,
+            transform: `rotate(${p.rotation}deg)`,
+            borderRadius: '2px',
+            pointerEvents: 'none',
+            zIndex: 50,
+            opacity: 0.9,
+          }}
+        />
+      ))}
+
+      {/* Floating HUD / Overlay Header */}
+      <header className="absolute top-0 left-0 right-0 z-30 px-4 py-2 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex justify-between items-center pointer-events-auto">
+        <div className="flex items-center gap-3">
+          <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+            <span className="w-2 h-2 rounded-full bg-[#059669]"></span>
+            <span className="font-extrabold text-xs tracking-tight text-white">
+              Free Brain Gain
+            </span>
+          </Link>
+          <div className="hidden sm:flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-xs font-bold">
+            <span>Level {currentGlobalLevel} / 100</span>
+            <span className="text-white/40">|</span>
+            <span>Moves: <strong className="text-[#059669]">{moves}</strong></span>
+            <span className="text-white/40">|</span>
+            <span>Time: <strong className="text-[#DC2626]">{formatTimer(secondsElapsed)}</strong></span>
           </div>
-        </nav>
+        </div>
 
-        <section className="w-full bg-[#FFFFFF] px-4 py-1.5 rounded-xl shadow-sm border border-stone-200 flex justify-between items-center text-center">
-          <h2 className="text-xs sm:text-sm font-extrabold text-[#0F172A]">{config.title}</h2>
-          <p className="text-xs sm:text-sm text-[#475569]">
-            Moves: <span className="font-bold text-[#0F172A]">{moves}</span>
-          </p>
-          <p className="text-xs sm:text-sm text-[#475569]">
-            Time: <span className="font-bold text-[#0F172A]">{formatTimer(secondsElapsed)}</span>
-          </p>
-        </section>
-      </div>
+        <div className="flex items-center gap-2">
+          <div className="sm:hidden flex items-center gap-2 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 text-[11px] font-bold">
+            <span>M: <strong className="text-[#059669]">{moves}</strong></span>
+            <span>T: <strong className="text-[#DC2626]">{formatTimer(secondsElapsed)}</strong></span>
+          </div>
+          <Link 
+            href="/games" 
+            className="px-3 py-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs uppercase tracking-wider rounded-full transition shadow-lg"
+          >
+            Games
+          </Link>
+        </div>
+      </header>
 
-      {/* Board Container: Portrait vertical height on phone, Landscape rectangle on laptop */}
-      <section className="w-full flex-1 flex flex-col justify-center items-center py-1">
+      {/* Fullscreen Puzzle Board Grid taking 100% of the screen width and height */}
+      <section className="absolute inset-0 w-full h-full p-0 m-0 z-10 flex flex-col">
+        
+        {/* Win Notification Banner Overlay */}
+        {isWon && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-black/80 backdrop-blur-md px-6 py-2 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
+            <span className="text-xs sm:text-sm font-black text-[#059669]">
+              🎉 Congratulations! Level complete! Loading next level...
+            </span>
+          </div>
+        )}
+
+        {/* Edge-to-edge Grid Layout */}
         <div 
-          className={`grid ${config.gridClass} gap-0.5 w-[94vw] h-[68vh] sm:w-[650px] sm:h-[380px] bg-[#FFFFFF] rounded-2xl border-2 border-[#0F172A] overflow-hidden shadow-xl mx-auto`}
+          className={`grid ${config.gridClass} w-full h-full gap-0 bg-transparent overflow-hidden`}
         >
           {grid.map((correctIndexForThisTile, currentIndexOnBoard) => {
             const isSelected = selectedIdx === currentIndexOnBoard;
@@ -308,39 +401,31 @@ export default function PuzzleGame() {
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, currentIndexOnBoard)}
                 onClick={() => handlePieceClick(currentIndexOnBoard)}
-                className={`relative w-full h-full cursor-grab active:cursor-grabbing transition-opacity duration-100 ${
-                  isSelected ? 'opacity-90 ring-2 ring-[#0F172A] z-10' : 'opacity-100'
+                className={`relative w-full h-full cursor-grab active:cursor-grabbing transition-all overflow-hidden ${
+                  isSelected ? 'ring-4 ring-[#2563EB] z-30 scale-[0.98] shadow-2xl' : ''
                 }`}
-              >
-                <div
-                  className="w-full h-full"
-                  style={{
-                    backgroundImage: `url(${activeImageUrl})`,
-                    backgroundSize: `${backgroundSizeX}% ${backgroundSizeY}%`,
-                    backgroundPosition: `${backgroundPositionX}% ${backgroundPositionY}%`,
-                    backgroundRepeat: 'no-repeat',
-                  }}
-                />
-              </div>
+                style={{
+                  backgroundImage: `url(${activeImageUrl})`,
+                  backgroundSize: `${backgroundSizeX}% ${backgroundSizeY}%`,
+                  backgroundPosition: `${backgroundPositionX}% ${backgroundPositionY}%`,
+                  backgroundRepeat: 'no-repeat',
+                }}
+              />
             );
           })}
         </div>
+
       </section>
 
-      {/* Footer Instructions / Success Notice */}
-      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-1 shrink-0">
-        {isWon ? (
-          <div className="text-[#0F172A] font-bold text-xs sm:text-sm bg-[#FFFFFF] px-6 py-2 rounded-xl shadow-sm border border-stone-200 animate-bounce text-center">
-            🎉 Congratulations! {currentGlobalLevel % 3 === 0 || currentGlobalLevel === 100 
-              ? 'Level complete! Taking you to Journal...' 
-              : 'Moving to next level...'}
-          </div>
-        ) : (
-          <div className="text-xs text-stone-500 font-light text-center">
-            Drag pieces or tap two to swap them
-          </div>
-        )}
-      </div>
+      {/* Floating Bottom Instruction Footer Bar */}
+      <footer className="absolute bottom-0 left-0 right-0 z-30 px-4 py-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex justify-between items-center pointer-events-none text-[11px] font-bold text-white/80">
+        <span className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 pointer-events-auto">
+          {isWon ? 'Level Complete!' : 'Drag pieces or tap two to swap them'}
+        </span>
+        <Link href="/games" className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 pointer-events-auto hover:text-white text-[#2563EB]">
+          ← Back to Games
+        </Link>
+      </footer>
 
     </main>
   );

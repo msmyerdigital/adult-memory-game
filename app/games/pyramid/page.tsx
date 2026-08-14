@@ -170,13 +170,13 @@ export default function MathPyramidGame() {
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: ['#0F172A', '#0284C7', '#059669', '#3B82F6', '#10B981', '#F59E0B']
+        colors: ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED']
       });
       confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: ['#0F172A', '#0284C7', '#059669', '#3B82F6', '#10B981', '#F59E0B']
+        colors: ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED']
       });
     }, 250);
   };
@@ -305,42 +305,61 @@ export default function MathPyramidGame() {
   const successRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
 
   return (
-    <main className="h-[100dvh] w-full max-w-[430px] md:max-w-2xl mx-auto bg-[#FDFBF7] text-[#0F172A] p-1.5 md:p-3 flex flex-col justify-between overflow-hidden select-none relative box-border">
+    <main className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border select-none relative p-3">
       
-      {/* Top Header & Navigation */}
-      <nav className="w-full flex justify-between items-center bg-white px-3 py-1.5 rounded-xl shadow-sm border border-stone-200 text-stone-900 shrink-0">
-        <h1 className="text-xs md:text-sm font-normal tracking-tight text-stone-900">Math Pyramid - Level {currentGlobalLevel}</h1>
-        <div className="flex gap-1.5">
-          <Link href="/games" className="px-2.5 py-0.5 bg-black text-white rounded-lg text-xs font-normal transition-colors">Games</Link>
-          <Link href="/journal" className="px-2.5 py-0.5 bg-white text-stone-400 hover:text-stone-700 rounded-lg text-xs font-normal transition-colors">Journal</Link>
+      {/* Floating HUD / Overlay Header */}
+      <header className="absolute top-0 left-0 right-0 z-30 px-4 py-2 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center pointer-events-auto">
+        <div className="flex items-center gap-3">
+          <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2 bg-white backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-[#059669]"></span>
+            <span className="font-extrabold text-xs tracking-tight text-slate-900">
+              Free Brain Gain
+            </span>
+          </Link>
+          <div className="hidden sm:flex items-center gap-2 bg-white backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 text-xs font-bold shadow-sm">
+            <span>Level {currentGlobalLevel} / 100</span>
+            <span className="text-slate-300">|</span>
+            <span>Points: <strong className="text-[#059669]">{totalPoints}</strong></span>
+            <span className="text-slate-300">|</span>
+            <span>Success: <strong className="text-[#2563EB]">{successRate}%</strong></span>
+          </div>
         </div>
-      </nav>
 
-      {/* Header & Stats Bar */}
-      <section className="w-full bg-white p-1.5 md:p-2 rounded-xl shadow-sm border border-[#CBD5E1] grid grid-cols-4 gap-1 text-center shrink-0">
-        <div>
-          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Level</p>
-          <h2 className="text-xs font-normal text-[#0F172A]">{currentGlobalLevel} / 100</h2>
+        <div className="flex items-center gap-2">
+          <div className="sm:hidden flex items-center gap-2 bg-white backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200 text-[11px] font-bold shadow-sm">
+            <span>Pts: <strong className="text-[#059669]">{totalPoints}</strong></span>
+          </div>
+          <Link 
+            href="/games" 
+            className="px-3 py-1 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs uppercase tracking-wider rounded-full transition shadow-md"
+          >
+            Games
+          </Link>
         </div>
-        <div>
-          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Points</p>
-          <p className="text-xs font-normal text-[#0F172A]">{totalPoints}</p>
-        </div>
-        <div>
-          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Wins</p>
-          <p className="text-xs font-normal text-[#0F172A]">{gamesWon}</p>
-        </div>
-        <div>
-          <p className="text-[9px] uppercase tracking-wider text-[#475569] font-normal">Success</p>
-          <p className="text-xs font-normal text-[#0F172A]">{successRate}%</p>
-        </div>
-      </section>
+      </header>
 
-      {/* Pyramid Container */}
-      <section className="w-full flex-1 flex flex-col items-center justify-center my-1 shrink-0 min-h-0">
-        <div className={`flex flex-col items-center justify-center gap-2 md:gap-3 w-full h-full bg-white p-3 md:p-4 rounded-2xl border border-[#CBD5E1] shadow-sm ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+      {/* Main Game Section with compact vertical footprint */}
+      <section className="absolute inset-0 w-full h-full pt-14 pb-36 px-4 z-10 flex flex-col items-center justify-center">
+        
+        {/* Win Notification Banner Overlay */}
+        {isWon && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md px-6 py-2 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
+            <span className="text-xs sm:text-sm font-black text-[#059669]">
+              🎉 Congratulations! Level complete! Loading next level...
+            </span>
+          </div>
+        )}
+
+        {/* Pyramid Board Container (Scaled down with compact cell sizing) */}
+        <div className={`flex flex-col items-center justify-center gap-2 w-full max-w-xs sm:max-w-sm bg-white/80 backdrop-blur-xl p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+          
+          <div className="text-center mb-1">
+            <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Math Pyramid</h2>
+            <p className="text-[11px] text-slate-500">Tap cells and use keypad below</p>
+          </div>
+
           {pyramid.map((row, rIdx) => (
-            <div key={rIdx} className="flex gap-2 md:gap-3 justify-center w-full">
+            <div key={rIdx} className="flex gap-2 justify-center w-full">
               {row.map((val, cIdx) => {
                 const isVisible = hiddenMask[rIdx][cIdx];
                 const isSelected = selectedCell?.row === rIdx && selectedCell?.col === cIdx;
@@ -349,12 +368,12 @@ export default function MathPyramidGame() {
                   <button
                     key={cIdx}
                     onClick={() => handleCellClick(rIdx, cIdx)}
-                    className={`w-12 h-12 sm:w-16 sm:h-16 md:w-16 md:h-16 rounded-xl flex items-center justify-center font-normal text-xl sm:text-2xl md:text-2xl transition-all shadow-sm ${
+                    className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-black text-xl transition-all shadow-sm ${
                       isVisible
-                        ? `${isCompletedState ? 'animate-bounce text-white bg-[#059669] border-[#059669]' : 'bg-[#F1F5F9] text-[#0F172A] border border-[#CBD5E1]'} cursor-default`
+                        ? `${isCompletedState ? 'animate-bounce text-white bg-[#059669] border border-[#059669]/50' : 'bg-slate-100 text-slate-800 border border-slate-200'} cursor-default`
                         : isSelected
-                        ? 'bg-[#0F172A] text-white ring-4 ring-[#0F172A]/25 scale-105 z-10 shadow-md animate-bounce'
-                        : 'bg-white text-[#0F172A] border-2 border-[#0284C7] hover:bg-stone-50 cursor-pointer animate-pulse shadow-sm'
+                        ? 'bg-[#2563EB] text-white ring-4 ring-[#2563EB]/40 scale-105 z-10 shadow-lg animate-bounce'
+                        : 'bg-white hover:bg-slate-50 text-slate-900 border-2 border-[#2563EB] cursor-pointer animate-pulse shadow-md'
                     }`}
                   >
                     {isVisible ? val : isSelected && userInput ? userInput : '?'}
@@ -364,47 +383,31 @@ export default function MathPyramidGame() {
             </div>
           ))}
         </div>
+
       </section>
 
-      {/* Universal Number Keypad */}
-      <section className="w-full max-w-sm mx-auto grid grid-cols-5 gap-1.5 shrink-0 my-0.5">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
-          <button
-            key={num}
-            onClick={() => handleKeyPress(num.toString())}
-            disabled={!selectedCell || isWon || isCompletedState}
-            className="bg-white hover:bg-stone-100 active:bg-stone-200 text-[#0F172A] font-normal text-base md:text-lg py-1.5 md:py-2 rounded-xl border border-[#CBD5E1] shadow-sm transition-all disabled:opacity-40 cursor-pointer"
-          >
-            {num}
-          </button>
-        ))}
-      </section>
-
-      {/* Footer Status Message */}
-      <div className="w-full flex flex-col items-center justify-center pb-0.5 shrink-0">
-        <div className="text-[11px] font-normal text-[#0F172A] bg-white px-3 py-1 rounded-xl shadow-sm border border-[#CBD5E1] text-center w-full max-w-sm">
-          {isCompletedState ? '✨ Wonderful! Reviewing completed board...' : selectedCell ? 'Type a number using the keypad below' : 'Use addition and multiplication to solve the pyramid!'}
+      {/* Universal Number Keypad & Footer anchored securely at bottom */}
+      <footer className="absolute bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex flex-col items-center gap-2 pointer-events-auto">
+        <div className="w-full max-w-xs grid grid-cols-5 gap-1.5">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+            <button
+              key={num}
+              onClick={() => handleKeyPress(num.toString())}
+              disabled={!selectedCell || isWon || isCompletedState}
+              className="bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-extrabold text-base py-2 rounded-xl border border-slate-200 shadow-md transition-all disabled:opacity-30 cursor-pointer"
+            >
+              {num}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* Success Modal Overlay */}
-      {isWon && (
-        <div className="absolute inset-0 bg-[#0F172A]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-[#CBD5E1] flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-            <h3 className="text-2xl font-normal tracking-tight text-[#0F172A] mb-3">Congratulations!</h3>
-            
-            <p className="text-base font-normal text-[#334155] mb-6">
-              Pyramid solved successfully!
-            </p>
-
-            <div className="text-sm text-[#0F172A] font-normal bg-[#F1F5F9] px-5 py-3 rounded-2xl w-full border border-[#E2E8F0]">
-              {currentGlobalLevel % 3 === 0 || currentGlobalLevel === 100 
-                ? 'Session complete! Taking you to Journal...' 
-                : 'Loading next level...'}
-            </div>
-          </div>
+        <div className="flex justify-between items-center w-full max-w-xs px-1 text-[11px] font-bold text-slate-600">
+          <span>{isCompletedState ? '✨ Wonderful! Reviewing...' : selectedCell ? 'Type via keypad' : 'Select a cell'}</span>
+          <Link href="/games" className="text-[#2563EB] hover:text-blue-700 transition">
+            ← Games
+          </Link>
         </div>
-      )}
+      </footer>
 
     </main>
   );

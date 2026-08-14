@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
@@ -26,9 +26,8 @@ const targetWordsList = [
   'PIVOT', 'QUARK', 'RIVER', 'SCOUT', 'TANGY',
   'UNITE', 'VAPOR', 'WAGON', 'XENON', 'YIELD',
   'ZONAL', 'BLIMP', 'CANDY', 'DOWRY', 'EPOXY'
-]; // Total 100 words
+];
 
-// Comprehensive English language dictionary/thesaurus validation function
 const isValidEnglishWord = async (word: string): Promise<boolean> => {
   const cleanWord = word.trim().toLowerCase();
   if (cleanWord.length !== 5) return false;
@@ -42,7 +41,6 @@ const isValidEnglishWord = async (word: string): Promise<boolean> => {
     // Fallback if network request fails
   }
 
-  // Fallback comprehensive list of common 5-letter English words/thesaurus entries
   const localThesaurus = new Set([
     'TIGER', 'OCEAN', 'PIANO', 'TRAIN', 'MONEY', 'GHOST', 'PLUTO', 'NIGHT', 'RADIO', 'BRICK', 
     'STORM', 'CHESS', 'LASER', 'CORAL', 'APPLE', 'BEACH', 'BREAD', 'CHAIR', 'HOUSE', 'LIGHT',
@@ -76,10 +74,11 @@ export default function WordGuesserGame() {
   const [activeColIndex, setActiveColIndex] = useState<number>(0);
   const [shakingRow, setShakingRow] = useState<number | null>(null);
 
-  // Statistics state
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [gamesPlayed, setGamesPlayed] = useState<number>(0);
   const [gamesWon, setGamesWon] = useState<number>(0);
+
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const savedLevel = localStorage.getItem('word_guesser_global_level');
@@ -115,6 +114,9 @@ export default function WordGuesserGame() {
     setIsCompletedState(false);
     setActiveColIndex(0);
     setShakingRow(null);
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.focus();
+    }
   };
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function WordGuesserGame() {
         osc.stop(ctx.currentTime + note.time + note.duration);
       });
     } catch {
-      // Audio context fallback
+      // Audio fallback
     }
   };
 
@@ -179,13 +181,13 @@ export default function WordGuesserGame() {
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: ['#0F172A', '#0284C7', '#059669', '#3B82F6', '#10B981', '#F59E0B']
+        colors: ['#2563EB', '#059669', '#D97706', '#3B82F6', '#10B981', '#F59E0B']
       });
       confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: ['#0F172A', '#0284C7', '#059669', '#3B82F6', '#10B981', '#F59E0B']
+        colors: ['#2563EB', '#059669', '#D97706', '#3B82F6', '#10B981', '#F59E0B']
       });
     }, 250);
   };
@@ -322,26 +324,39 @@ export default function WordGuesserGame() {
     }
   };
 
-  // Physical keyboard listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isCompletedState) return;
-      if (e.key === 'Enter') {
-        handleKeyPress('ENTER');
-      } else if (e.key === 'Backspace') {
-        handleKeyPress('BACKSPACE');
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
-        handleKeyPress(e.key.toUpperCase());
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toUpperCase();
+    if (val.length === 0) {
+      handleKeyPress('BACKSPACE');
+    } else {
+      const lastChar = val[val.length - 1];
+      if (/^[A-Z]$/.test(lastChar)) {
+        handleKeyPress(lastChar);
       }
-    };
+    }
+    // Reset hidden input value safely
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.value = '';
+    }
+  };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, guesses, gameStatus, activeWord, isCompletedState]);
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleKeyPress('ENTER');
+    } else if (e.key === 'Backspace') {
+      handleKeyPress('BACKSPACE');
+    }
+  };
+
+  const triggerFocusKeyboard = () => {
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.focus();
+    }
+  };
 
   const getLetterStatus = (letter: string, index: number, guess: string, target: string) => {
     if (target[index] === letter) {
-      return 'bg-[#059669] text-white border-[#059669] shadow-sm'; // Rich accessible green
+      return 'bg-[#059669] text-white border-[#059669] shadow-sm';
     }
 
     let targetCount = 0;
@@ -360,144 +375,138 @@ export default function WordGuesserGame() {
     const availableYellowsCount = targetCount - guessIndexMatchCount;
 
     if (target.includes(letter) && precedingInstancesInGuess < availableYellowsCount) {
-      return 'bg-[#D97706] text-white border-[#D97706] shadow-sm'; // Warm high-contrast amber/orange
+      return 'bg-[#D97706] text-white border-[#D97706] shadow-sm';
     }
 
-    return 'bg-[#475569] text-white border-[#475569] shadow-sm'; // Clean slate grey
+    return 'bg-[#94A3B8] text-white border-[#94A3B8] shadow-sm';
   };
 
   if (!isInitialized) return null;
 
   const successRate = gamesPlayed > 0 ? Math.round((gamesWon / gamesPlayed) * 100) : 0;
-  const showInstructions = currentGlobalLevel <= 5;
 
   return (
-    <main className="h-screen w-screen bg-[#FDFBF7] text-[#0F172A] p-3 md:p-4 flex flex-col justify-between overflow-hidden select-none relative">
+    <main 
+      className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border select-none relative p-4 cursor-text"
+      onClick={triggerFocusKeyboard}
+    >
       
-      {/* Top Header & Navigation - Left Unchanged */}
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-stone-200 text-stone-900">
-        <h1 className="text-lg font-bold tracking-tight text-stone-900">Picture Puzzle — Level {currentGlobalLevel}</h1>
-        <div className="flex gap-2">
-          <Link href="/games" className="px-4 py-1.5 bg-black text-white rounded-xl text-sm font-semibold transition-colors">Games</Link>
-          <Link href="/journal" className="px-4 py-1.5 bg-white text-stone-400 hover:text-stone-700 rounded-xl text-sm font-semibold transition-colors">Journal</Link>
-        </div>
-      </nav>
+      {/* Hidden input to trigger native mobile keyboard */}
+      <input
+        ref={hiddenInputRef}
+        type="text"
+        className="absolute opacity-0 pointer-events-none h-0 w-0"
+        onChange={handleInputChange}
+        onKeyDown={handleInputKeyDown}
+        autoFocus
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck="false"
+      />
 
-      {/* Header & Stats Bar */}
-      <section className="w-full max-w-5xl mx-auto bg-white p-3 rounded-2xl shadow-sm border border-[#CBD5E1] grid grid-cols-4 gap-2 text-center">
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#475569] font-bold">Level</p>
-          <h2 className="text-base md:text-lg font-extrabold text-[#0F172A]">{currentGlobalLevel} / 100</h2>
+      {/* Floating Header */}
+      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-3 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center pointer-events-auto">
+        <div className="flex items-center gap-3">
+          <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
+            <span className="font-extrabold text-xs tracking-tight text-slate-900">
+              Free Brain Gain
+            </span>
+          </Link>
+          <div className="hidden sm:flex items-center gap-2.5 bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 text-xs font-bold shadow-sm">
+            <span>Level {currentGlobalLevel} / 100</span>
+            <span className="text-slate-300">|</span>
+            <span>Points: <strong className="text-[#059669]">{totalPoints}</strong></span>
+            <span className="text-slate-300">|</span>
+            <span>Success: <strong className="text-[#2563EB]">{successRate}%</strong></span>
+          </div>
         </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#475569] font-bold">Points</p>
-          <p className="text-base md:text-lg font-extrabold text-[#0F172A]">{totalPoints}</p>
-        </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#475569] font-bold">Wins</p>
-          <p className="text-base md:text-lg font-extrabold text-[#0F172A]">{gamesWon}</p>
-        </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[#475569] font-bold">Success Rate</p>
-          <p className="text-base md:text-lg font-extrabold text-[#0F172A]">{successRate}%</p>
-        </div>
-      </section>
 
-      {/* Game Grid Container with Optional Instructions Side-by-Side */}
-      <section className={`w-full mx-auto flex flex-col md:flex-row items-center justify-center gap-6 my-auto ${showInstructions ? 'max-w-2xl' : 'max-w-sm'}`}>
+        <div className="flex items-center gap-2">
+          <div className="sm:hidden flex items-center gap-2 bg-white backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold shadow-sm">
+            <span>Pts: <strong className="text-[#059669]">{totalPoints}</strong></span>
+          </div>
+          <Link 
+            href="/games" 
+            className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-xs uppercase tracking-wider rounded-full transition shadow-md"
+          >
+            Games
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Game Section with Larger Game Box */}
+      <section className="absolute inset-0 w-full h-full pt-16 pb-12 px-4 z-10 flex flex-col items-center justify-center">
         
-        {/* Compact Instructions / Legend Panel (Only shown for levels 1 to 5) */}
-        {showInstructions && (
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-[#CBD5E1] flex flex-col gap-3 text-xs md:text-sm font-bold text-[#334155] w-full md:w-56 shrink-0 animate-in fade-in duration-200">
-            <p className="text-[#0F172A] font-extrabold text-sm border-b border-[#E2E8F0] pb-1.5">How To Play</p>
-            <p className="text-xs font-semibold leading-relaxed text-[#1E293B]">Guess the 5-letter word in 6 tries.</p>
-            <div className="flex flex-col gap-2.5 pt-1">
-              <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-md bg-[#059669] shrink-0"></span>Correct letter & spot</span>
-              <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-md bg-[#D97706] shrink-0"></span>Right letter, wrong spot</span>
-              <span className="flex items-center gap-2"><span className="w-4 h-4 rounded-md bg-[#475569] shrink-0"></span>Letter not in word</span>
-            </div>
+        {/* Win / Feedback Banner Overlay */}
+        {isCompletedState && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
+            <span className="text-xs sm:text-sm font-black text-[#059669]">
+              {gameStatus === 'won' ? '🎉 Word guessed! Loading next level...' : `The word was ${activeWord}`}
+            </span>
           </div>
         )}
 
-        {/* Wordle Board */}
-        <div className={`grid grid-rows-6 gap-2 w-full max-w-[280px] md:max-w-[310px] ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
-          {Array.from({ length: 6 }).map((_, rIdx) => {
-            const isSubmitted = rIdx < guesses.length;
-            const isCurrent = rIdx === guesses.length;
-            const guessWord = isSubmitted ? guesses[rIdx] : isCurrent ? currentGuess : '';
-            const isWinningRow = gameStatus === 'won' && guesses[rIdx] === activeWord;
-            const isRowShaking = shakingRow === rIdx;
+        {/* Larger Wordle Board Container */}
+        <div className={`flex flex-col items-center justify-center gap-2.5 w-full max-w-[340px] sm:max-w-[390px] bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-2xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+          
+          <div className="text-center mb-1">
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Word Guesser</h2>
+            <p className="text-xs text-slate-500">Tap anywhere to type with your keyboard</p>
+          </div>
 
-            return (
-              <div 
-                key={rIdx} 
-                className={`grid grid-cols-5 gap-2 ${isRowShaking ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}
-              >
-                {Array.from({ length: 5 }).map((_, cIdx) => {
-                  const letter = guessWord[cIdx] || '';
-                  let tileStyle = 'bg-white text-[#0F172A] border-2 border-[#94A3B8] shadow-sm';
+          <div className="grid grid-rows-6 gap-2 w-full">
+            {Array.from({ length: 6 }).map((_, rIdx) => {
+              const isSubmitted = rIdx < guesses.length;
+              const isCurrent = rIdx === guesses.length;
+              const guessWord = isSubmitted ? guesses[rIdx] : isCurrent ? currentGuess : '';
+              const isWinningRow = gameStatus === 'won' && guesses[rIdx] === activeWord;
+              const isRowShaking = shakingRow === rIdx;
 
-                  if (isSubmitted) {
-                    tileStyle = getLetterStatus(letter, cIdx, guesses[rIdx], activeWord);
-                  } else if (letter) {
-                    tileStyle = 'bg-white text-[#0F172A] border-2 border-[#0284C7] shadow-md scale-105';
-                  }
+              return (
+                <div 
+                  key={rIdx} 
+                  className={`grid grid-cols-5 gap-2 ${isRowShaking ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}
+                >
+                  {Array.from({ length: 5 }).map((_, cIdx) => {
+                    const letter = guessWord[cIdx] || '';
+                    let tileStyle = 'bg-white text-slate-900 border-2 border-slate-300 shadow-sm';
 
-                  const isCursorActive = isCurrent && activeColIndex === cIdx;
+                    if (isSubmitted) {
+                      tileStyle = getLetterStatus(letter, cIdx, guesses[rIdx], activeWord);
+                    } else if (letter) {
+                      tileStyle = 'bg-white text-slate-900 border-2 border-[#2563EB] shadow-md scale-105';
+                    }
 
-                  return (
-                    <div
-                      key={cIdx}
-                      className={`h-12 md:h-14 rounded-xl flex items-center justify-center font-black text-xl md:text-2xl transition-all ${tileStyle} ${
-                        isCursorActive ? 'border-2 border-[#0284C7] ring-4 ring-[#0284C7]/20' : ''
-                      } ${isWinningRow && isCompletedState ? 'animate-bounce opacity-95 scale-105' : ''}`}
-                    >
-                      {letter}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                    const isCursorActive = isCurrent && activeColIndex === cIdx;
+
+                    return (
+                      <div
+                        key={cIdx}
+                        className={`h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center font-black text-2xl sm:text-3xl transition-all mx-auto ${tileStyle} ${
+                          isCursorActive ? 'border-2 border-[#2563EB] ring-4 ring-[#2563EB]/20' : ''
+                        } ${isWinningRow && isCompletedState ? 'animate-bounce opacity-95 scale-105' : ''}`}
+                      >
+                        {letter}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+
         </div>
 
       </section>
 
-      {/* Feedback Message Footer */}
-      <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center pb-2 h-10">
-        {message ? (
-          <div className="text-sm font-bold text-[#0F172A] bg-white px-6 py-2 rounded-xl shadow-sm border border-[#CBD5E1] animate-in fade-in duration-150">
-            {message}
-          </div>
-        ) : (
-          <div className="text-xs text-[#334155] font-bold">
-            Session Level: <span className="text-[#059669] font-extrabold">{sessionLevelsPlayed + 1} / 3</span>
-          </div>
-        )}
-      </div>
-
-      {/* Success Modal Overlay */}
-      {isCompletedState && (
-        <div className="absolute inset-0 bg-[#0F172A]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-[#CBD5E1] flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-            <h3 className="text-2xl font-bold tracking-tight text-[#0F172A] mb-3">
-              {gameStatus === 'won' ? 'Congratulations!' : 'Game Over'}
-            </h3>
-            
-            <p className="text-base font-semibold text-[#334155] mb-6">
-              {gameStatus === 'won' ? 'Word guessed successfully!' : `The word was ${activeWord}`}
-            </p>
-
-            <div className="text-sm text-[#0F172A] font-bold bg-[#F1F5F9] px-5 py-3 rounded-2xl w-full border border-[#E2E8F0]">
-              {gameStatus === 'lost' 
-                ? 'Retrying with your last guess carried over...' 
-                : sessionLevelsPlayed >= 3 
-                  ? 'Session complete! Taking you to Journal...' 
-                  : 'Loading next level...'}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Footer / Status bar */}
+      <footer className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center w-full max-w-md mx-auto pointer-events-auto text-xs font-bold text-slate-600">
+        <span>{message || `Session Level: ${sessionLevelsPlayed + 1} / 3`}</span>
+        <Link href="/games" className="text-[#2563EB] hover:text-blue-700 transition">
+          ← Games
+        </Link>
+      </footer>
 
       {/* Tailwind keyframes for error shake animation */}
       <style jsx global>{`
