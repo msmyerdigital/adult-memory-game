@@ -185,7 +185,9 @@ export default function GamesPage() {
         
         {/* Main Navigation */}
         <nav className="flex justify-between items-center px-4 md:px-6 py-2.5 border-b border-[#E6E0D5] bg-[#FDFAF6]">
-          <h1 className="text-xl md:text-2xl font-normal tracking-wide text-[#1C1917] uppercase">Games Hub</h1>
+          <Link href="https://freebraingain.vercel.app/" className="text-xl md:text-2xl font-normal tracking-wide text-[#1C1917] uppercase hover:underline">
+            Free Brain Gain
+          </Link>
           <div className="flex gap-2">
             <Link href="/games" className="px-5 py-2 bg-[#1C1917] text-[#FAF8F5] rounded-xl text-base md:text-lg font-normal tracking-wide shadow-2xs">Games</Link>
             <Link href="/journal" className="px-5 py-2 bg-[#FDFAF6] border border-[#D6CFC7] text-[#44403C] hover:text-[#1C1917] rounded-xl text-base md:text-lg font-normal tracking-wide shadow-2xs">Journal</Link>
