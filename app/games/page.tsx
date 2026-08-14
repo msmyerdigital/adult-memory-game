@@ -47,7 +47,7 @@ export default function GamesPage() {
       description: 'Follow melody sequences.',
       badge: 'Focus',
       image: '/piano.png',
-      link: '/memory',
+      link: '/games/memory',
     },
     {
       title: 'Word Search',
