@@ -23,20 +23,8 @@ export default function GamesPage() {
   const [currentTemp, setCurrentTemp] = useState(14);
   const [currentCondition, setCurrentCondition] = useState('Mostly cloudy');
   const [highLow, setHighLow] = useState({ high: 16, low: 9 });
-  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([
-    { time: 'Now', temp: 14, condition: 'Mostly cloudy' },
-    { time: '1 PM', temp: 15, condition: 'Partly cloudy' },
-    { time: '2 PM', temp: 16, condition: 'Sunny' },
-    { time: '3 PM', temp: 15, condition: 'Sunny' },
-    { time: '4 PM', temp: 14, condition: 'Cloudy' },
-  ]);
-  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([
-    { day: 'Today', maxTemp: 16, minTemp: 9, condition: 'Partly cloudy' },
-    { day: 'Tue', maxTemp: 18, minTemp: 10, condition: 'Sunny' },
-    { day: 'Wed', maxTemp: 15, minTemp: 11, condition: 'Rainy' },
-    { day: 'Thu', maxTemp: 14, minTemp: 8, condition: 'Showers' },
-    { day: 'Fri', maxTemp: 17, minTemp: 9, condition: 'Sunny' },
-  ]);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([]);
+  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([]);
 
   const gamesList = [
     {
@@ -118,10 +106,15 @@ export default function GamesPage() {
         const minT = Math.round(data.daily.temperature_2m_min[0] || 9);
 
         const hourlyTimes: string[] = data.hourly.time;
-        const currentTimeMs = new Date().getTime();
-        
-        let nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= currentTimeMs);
+        const nowMs = new Date().getTime();
+
+        // Find the index of the exact current or next upcoming hour block reported by the API
+        let nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= nowMs);
         if (nowIndex === -1) nowIndex = 0;
+        // If the timestamp is slightly in the past relative to the api slot, step back by 1 so 'Now' matches correctly
+        if (nowIndex > 0 && Math.abs(new Date(hourlyTimes[nowIndex - 1]).getTime() - nowMs) < 3600000) {
+          nowIndex -= 1;
+        }
 
         const nextHours = [];
         for (let idx = 0; idx < 5; idx++) {
@@ -156,7 +149,7 @@ export default function GamesPage() {
         if (nextHours.length > 0) setHourlyForecast(nextHours);
         if (nextDays.length > 0) setDailyForecast(nextDays);
       } catch {
-        // Keeps built-in default weather state values seamlessly if offline/blocked
+        // Keeps defaults safely
       }
     };
 
