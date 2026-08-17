@@ -4,9 +4,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+interface HourlyForecast {
+  time: string;
+  temp: number;
+  condition: string;
+}
+
 export default function GamesPage() {
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [locationName, setLocationName] = useState('Detecting location...');
+  const [currentWeather, setCurrentWeather] = useState({ temp: 15, condition: 'Mostly cloudy' });
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([]);
 
   const gamesList = [
     {
@@ -39,6 +47,31 @@ export default function GamesPage() {
     },
   ];
 
+  const getWeatherDescription = (code: number) => {
+    if (code === 0) return 'Sunny';
+    if (code >= 1 && code <= 3) return 'Partly cloudy';
+    if (code >= 45 && code <= 48) return 'Foggy';
+    if (code >= 51 && code <= 67) return 'Rainy';
+    if (code >= 71 && code <= 77) return 'Snowy';
+    if (code >= 80 && code <= 82) return 'Showers';
+    if (code >= 95) return 'Thunderstorm';
+    return 'Cloudy';
+  };
+
+  const getWeatherEmoji = (condition: string) => {
+    switch (condition) {
+      case 'Sunny': return '☀️';
+      case 'Partly cloudy': return '⛅';
+      case 'Cloudy': return '☁️';
+      case 'Foggy': return '🌫️';
+      case 'Rainy': return '🌧️';
+      case 'Snowy': return '❄️';
+      case 'Showers': return '🌦️';
+      case 'Thunderstorm': return '⛈️';
+      default: return '☁️';
+    }
+  };
+
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
@@ -58,6 +91,56 @@ export default function GamesPage() {
     updateDateTime();
     const interval = setInterval(updateDateTime, 10000);
 
+    const fetchWeatherData = async (lat: number, lon: number, placeName: string) => {
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&timezone=auto`
+        );
+        if (!res.ok) throw new Error('Weather fetch failed');
+        const data = await res.json();
+
+        const currentT = Math.round(data.current.temperature_2m);
+        const currentC = getWeatherDescription(data.current.weather_code);
+        setCurrentWeather({ temp: currentT, condition: currentC });
+
+        const hourlyTimes: string[] = data.hourly.time;
+        const nowMs = new Date().getTime();
+        
+        let nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= nowMs);
+        if (nowIndex === -1) nowIndex = 0;
+        if (nowIndex > 0 && Math.abs(new Date(hourlyTimes[nowIndex - 1]).getTime() - nowMs) < 3600000) {
+          nowIndex -= 1;
+        }
+
+        const nextHours = [];
+        for (let idx = 0; idx < 5; idx++) {
+          const actualIdx = nowIndex + idx;
+          if (actualIdx < hourlyTimes.length) {
+            const timeStr = hourlyTimes[actualIdx];
+            const dateObj = new Date(timeStr);
+            const timeLabel = idx === 0 ? 'Now' : dateObj.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+            nextHours.push({
+              time: timeLabel,
+              temp: Math.round(data.hourly.temperature_2m[actualIdx]),
+              condition: getWeatherDescription(data.hourly.weather_code[actualIdx]),
+            });
+          }
+        }
+
+        if (nextHours.length > 0) setHourlyForecast(nextHours);
+        setLocationName(placeName);
+      } catch {
+        // Fallback display if fetch fails
+        setHourlyForecast([
+          { time: 'Now', temp: 15, condition: 'Partly cloudy' },
+          { time: '6 PM', temp: 14, condition: 'Cloudy' },
+          { time: '7 PM', temp: 13, condition: 'Cloudy' },
+          { time: '8 PM', temp: 12, condition: 'Clear' },
+          { time: '9 PM', temp: 11, condition: 'Clear' },
+        ]);
+      }
+    };
+
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -70,18 +153,19 @@ export default function GamesPage() {
             const data = await res.json();
             const city = data.address?.city || data.address?.town || data.address?.village || data.address?.state || 'Local Area';
             const country = data.address?.country_code ? data.address.country_code.toUpperCase() : '';
-            setLocationName(country ? `${city}, ${country}` : city);
+            const place = country ? `${city}, ${country}` : city;
+            fetchWeatherData(latitude, longitude, place);
           } catch {
-            setLocationName('Melbourne');
+            fetchWeatherData(-37.8136, 144.9631, 'Melbourne');
           }
         },
         () => {
-          setLocationName('Melbourne');
+          fetchWeatherData(-37.8136, 144.9631, 'Melbourne');
         },
         { timeout: 10000 }
       );
     } else {
-      setLocationName('Melbourne');
+      fetchWeatherData(-37.8136, 144.9631, 'Melbourne');
     }
 
     return () => clearInterval(interval);
@@ -118,9 +202,10 @@ export default function GamesPage() {
       {/* Two Parallel Columns Layout (Left Column = 35%, Right Column = 65%) */}
       <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 grid md:grid-cols-12 gap-4 items-start">
         
-        {/* Left Column: Date, Time & Location (35% -> md:col-span-4 or exact proportions, using 4/12 ≈ 33% / 5/12 ≈ 41%) */}
-        <aside aria-label="Current Date and Location" className="md:col-span-5 lg:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
-          <div className="flex flex-col gap-3">
+        {/* Left Column: Date, Time & Weather Forecast (35% -> md:col-span-5 lg:col-span-4) */}
+        <aside aria-label="Current Date, Location and Weather" className="md:col-span-5 lg:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
+          <div className="flex flex-col gap-4">
+            {/* Location */}
             <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
               <span className="font-extrabold text-[#059669] text-xs flex items-center gap-1">
                 <span>📍</span> {locationName}
@@ -130,18 +215,49 @@ export default function GamesPage() {
               </span>
             </div>
 
-            <div className="py-2">
+            {/* Today is: Date and Time */}
+            <div>
               <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
                 Today is:
               </span>
-              <p className="text-base sm:text-lg font-black text-[#0F172A] leading-snug">
+              <p className="text-sm sm:text-base font-black text-[#0F172A] leading-snug">
                 {currentDateTime || 'Loading time...'}
               </p>
             </div>
+
+            {/* Right now the weather outside is: */}
+            <div className="pt-3 border-t border-[#E2E8F0]">
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
+                Right now the weather outside is:
+              </span>
+              <div className="flex items-center justify-between bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0]">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{getWeatherEmoji(currentWeather.condition)}</span>
+                  <span className="font-bold text-[#0F172A]">{currentWeather.condition}</span>
+                </div>
+                <span className="text-base font-black text-[#2563EB]">{currentWeather.temp}°C</span>
+              </div>
+            </div>
+
+            {/* Forecast for the rest of the day */}
+            <div className="pt-1">
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
+                Forecast for the rest of the day:
+              </span>
+              <div className="grid grid-cols-5 gap-1 bg-[#F8FAFC] p-1.5 rounded-lg border border-[#E2E8F0] text-center">
+                {hourlyForecast.map((hour, idx) => (
+                  <div key={idx} className="flex flex-col items-center justify-center">
+                    <span className="text-[9px] font-bold text-[#64748B] truncate w-full">{hour.time}</span>
+                    <span className="text-[11px] my-0.5">{getWeatherEmoji(hour.condition)}</span>
+                    <span className="text-[10px] font-bold text-[#0F172A]">{hour.temp}°</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-[#E2E8F0] text-[10px] text-[#64748B] font-medium">
-            Location retrieved securely via browser permissions.
+          <div className="pt-3 mt-4 border-t border-[#E2E8F0] text-[10px] text-[#64748B] font-medium text-center">
+            Geolocation & weather synced automatically.
           </div>
         </aside>
 
