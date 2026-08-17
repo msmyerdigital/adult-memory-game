@@ -355,7 +355,7 @@ export default function MathPyramidGame() {
           
           <div className="text-center mb-1">
             <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Math Pyramid</h2>
-            <p className="text-[11px] text-slate-500">Each number is the sum or product of the two blocks directly below it.</p>
+            <p className="text-[11px] text-slate-500">Each number is the sum or product of the two blocks below.</p>
           </div>
 
           {pyramid.map((row, rIdx) => (
