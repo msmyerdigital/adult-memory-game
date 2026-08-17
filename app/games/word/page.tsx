@@ -471,7 +471,7 @@ export default function WordGuesserGame() {
                 <span className="text-[10px] font-normal text-slate-500">6 tries</span>
               </div>
               <div className="leading-relaxed">
-                Guess the secret 5-letter word. Type any word and hit <strong className="text-slate-900">Enter</strong>. Colors show how close you are: <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#059669]">Green</span> (correct spot), <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#D97706]">Yellow</span> (wrong spot), <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#94A3B8]">Gray</span> (not in word).
+                Guess a 5 letter word and hit <strong className="text-slate-900">Enter</strong>. <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#059669]">Green</span> (correct spot), <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#D97706]">Yellow</span> (wrong spot), <span className="inline-block px-1.5 py-0.5 rounded text-white font-bold bg-[#94A3B8]">Gray</span> (not in word).
               </div>
               <button
                 onClick={(e) => {
