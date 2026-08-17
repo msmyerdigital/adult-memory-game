@@ -23,8 +23,20 @@ export default function GamesPage() {
   const [currentTemp, setCurrentTemp] = useState(14);
   const [currentCondition, setCurrentCondition] = useState('Mostly cloudy');
   const [highLow, setHighLow] = useState({ high: 16, low: 9 });
-  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([]);
-  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([]);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([
+    { time: 'Now', temp: 14, condition: 'Mostly cloudy' },
+    { time: '1 PM', temp: 15, condition: 'Partly cloudy' },
+    { time: '2 PM', temp: 16, condition: 'Sunny' },
+    { time: '3 PM', temp: 15, condition: 'Sunny' },
+    { time: '4 PM', temp: 14, condition: 'Cloudy' },
+  ]);
+  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([
+    { day: 'Today', maxTemp: 16, minTemp: 9, condition: 'Partly cloudy' },
+    { day: 'Tue', maxTemp: 18, minTemp: 10, condition: 'Sunny' },
+    { day: 'Wed', maxTemp: 15, minTemp: 11, condition: 'Rainy' },
+    { day: 'Thu', maxTemp: 14, minTemp: 8, condition: 'Showers' },
+    { day: 'Fri', maxTemp: 17, minTemp: 9, condition: 'Sunny' },
+  ]);
 
   const gamesList = [
     {
@@ -144,11 +156,10 @@ export default function GamesPage() {
         if (nextHours.length > 0) setHourlyForecast(nextHours);
         if (nextDays.length > 0) setDailyForecast(nextDays);
       } catch {
-        // Fallback or keep defaults silently
+        // Keeps built-in default weather state values seamlessly if offline/blocked
       }
     };
 
-    // Fixed default coordinates for Melbourne (no permission prompt required)
     fetchWeather(-37.8136, 144.9631, 'Melbourne');
   }, []);
 
