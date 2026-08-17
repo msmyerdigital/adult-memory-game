@@ -15,6 +15,8 @@ export default function GamesPage() {
   const [locationName, setLocationName] = useState('Detecting location...');
   const [currentWeather, setCurrentWeather] = useState({ temp: 15, condition: 'Mostly cloudy' });
   const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([]);
+  const [sunriseTime, setSunriseTime] = useState('6:42 AM');
+  const [sunsetTime, setSunsetTime] = useState('5:55 PM');
 
   const gamesList = [
     {
@@ -94,7 +96,7 @@ export default function GamesPage() {
     const fetchWeatherData = async (lat: number, lon: number, placeName: string) => {
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&timezone=auto`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&daily=sunrise,sunset&timezone=auto`
         );
         if (!res.ok) throw new Error('Weather fetch failed');
         const data = await res.json();
@@ -102,6 +104,13 @@ export default function GamesPage() {
         const currentT = Math.round(data.current.temperature_2m);
         const currentC = getWeatherDescription(data.current.weather_code);
         setCurrentWeather({ temp: currentT, condition: currentC });
+
+        if (data.daily && data.daily.sunrise && data.daily.sunset) {
+          const sunriseDate = new Date(data.daily.sunrise[0]);
+          const sunsetDate = new Date(data.daily.sunset[0]);
+          setSunriseTime(sunriseDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
+          setSunsetTime(sunsetDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
+        }
 
         const hourlyTimes: string[] = data.hourly.time;
         const nowMs = new Date().getTime();
@@ -204,7 +213,7 @@ export default function GamesPage() {
         
         {/* Left Column: Date, Time & Weather Forecast (35% -> md:col-span-5 lg:col-span-4) */}
         <aside aria-label="Current Date, Location and Weather" className="md:col-span-5 lg:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5">
             {/* Location */}
             <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
               <span className="font-extrabold text-[#059669] text-xs flex items-center gap-1">
@@ -226,7 +235,7 @@ export default function GamesPage() {
             </div>
 
             {/* Right now the weather outside is: */}
-            <div className="pt-3 border-t border-[#E2E8F0]">
+            <div className="pt-2 border-t border-[#E2E8F0]">
               <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
                 Right now the weather outside is:
               </span>
@@ -240,7 +249,7 @@ export default function GamesPage() {
             </div>
 
             {/* Forecast for the rest of the day */}
-            <div className="pt-1">
+            <div>
               <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
                 Forecast for the rest of the day:
               </span>
@@ -254,9 +263,31 @@ export default function GamesPage() {
                 ))}
               </div>
             </div>
+
+            {/* Sunrise and Sunset Info (Two columns on the same line) */}
+            <div className="pt-1">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0] flex items-center gap-2.5">
+                  <span className="text-lg">🌅</span>
+                  <div>
+                    <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block">Sunrise</span>
+                    <span className="text-xs font-black text-[#0F172A]">{sunriseTime}</span>
+                  </div>
+                </div>
+
+                <div className="bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0] flex items-center gap-2.5">
+                  <span className="text-lg">🌇</span>
+                  <div>
+                    <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block">Sunset</span>
+                    <span className="text-xs font-black text-[#0F172A]">{sunsetTime}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <div className="pt-3 mt-4 border-t border-[#E2E8F0] text-[10px] text-[#64748B] font-medium text-center">
+          <div className="pt-3 mt-3 border-t border-[#E2E8F0] text-[10px] text-[#64748B] font-medium text-center">
             Geolocation & weather synced automatically.
           </div>
         </aside>
