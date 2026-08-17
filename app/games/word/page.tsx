@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
 
-const targetWordsList = [
+const rawTargetWordsList = [
   'TIGER', 'OCEAN', 'PIANO', 'TRAIN', 'MONEY', 
   'GHOST', 'PLUTO', 'NIGHT', 'RADIO', 'BRICK', 
   'STORM', 'CHESS', 'LASER', 'CORAL', 'APPLE',
@@ -19,7 +19,7 @@ const targetWordsList = [
   'JOLLY', 'KARMA', 'LUNAR', 'MAPLE', 'NOVEL', 
   'ORBIT', 'PULSE', 'QUILT', 'RADAR', 'SOLAR', 
   'TULIP', 'ULTRA', 'VALOR', 'WHIRL', 'YACHT', 
-  'ZENITH', 'AMBER', 'DELTA', 'ELFIN', 'GLINT', 
+  'AMBER', 'DELTA', 'ELFIN', 'GLINT', 
   'HAVEN', 'INLET', 'JUMBO', 'KNEEL', 'LATCH', 
   'MANGO', 'NAVAL', 'OASIS', 'PIVOT', 'QUARK', 
   'RIVER', 'SCOUT', 'TANGY', 'UNITE', 'VAPOR', 
@@ -27,34 +27,33 @@ const targetWordsList = [
   'CANDY', 'DOWRY', 'EPOXY', 'CRANE', 'SLATE', 
   'STARE', 'GUIDE', 'MOUSE', 'BOARD', 'SHIRT', 
   'SHARK', 'SMART', 'CLEAN', 'FRESH', 'GREEN', 
-  'SMOKE', 'STONE', 'BRIGHT', 'SHINE', 'POWER', 
+  'SMOKE', 'STONE', 'SHINE', 'POWER', 
   'TABLE', 'PAPER', 'TOWER', 'SCOPE', 'FIELD', 
   'BLOOM', 'FLUTE', 'SPEAK', 'SENSE', 'SOUND',
-  // Expanded comprehensive 5-letter dictionary words including common plurals/variants
-  'CATS', 'DOGS', 'BIRDS', 'PLANTS', 'BOOKS', 'DESKS', 'CHAIRS', 'ROADS', 'HILLS', 'LAKES',
-  'TREES', 'FRUITS', 'PLUMS', 'PEACHES', 'BEARS', 'WOLVES', 'FOXES', 'HHARES', 'DEERS', 'MOOSE',
-  'SEALS', 'WHALES', 'SHARKS', 'CRABS', 'SNAKES', 'FROGS', 'TOADS', 'BUGS', 'ANTS', 'BEES',
-  'MAPS', 'FLAGS', 'SIGNS', 'LIGHTS', 'BOXES', 'GIFT', 'TOYS', 'GAMES', 'CARDS', 'DICES',
-  'SHOES', 'BOOTS', 'SOCKS', 'PANTS', 'HATS', 'COATS', 'VESTS', 'BELTS', 'RINGS', 'GEMS',
-  'BRICK', 'STONES', 'WALLS', 'DOORS', 'ROOFS', 'FLOORS', 'STEPS', 'GATES', 'FENCES', 'YARDS',
-  'FIRES', 'SPARKS', 'ASHES', 'SMOKE', 'WINDS', 'STORMS', 'RAINS', 'SNOWS', 'HAILS', 'FROSTS',
-  'SKIES', 'STARS', 'MOONS', 'SUNS', 'COMETS', 'WORLDS', 'GLOBES', 'MAPS', 'ATLAS', 'ZONES',
-  'TIDES', 'WAVES', 'SHORES', 'BANKS', 'REEFS', 'BAYOUS', 'PONDS', 'CREEKS', 'VALLEYS', 'PEAKS',
-  'ROCKS', 'CLAY', 'SANDS', 'DUSTS', 'MUDDY', 'SOILS', 'FARMS', 'FIELDS', 'CROPS', 'GRAINS',
-  'SEEDS', 'BUDS', 'STEMS', 'ROOTS', 'VINES', 'LEAVES', 'FERNS', 'MOSS', 'WEEDS', 'BUSHES',
-  'WEEKS', 'MONTHS', 'YEARS', 'HOURS', 'DAYS', 'TIMES', 'AGES', 'DATES', 'CLOCKS', 'WATCHES',
-  'NOTES', 'SONGS', 'TUNES', 'RHYTHMS', 'VOICES', 'SOUNDS', 'WORDS', 'LETTERS', 'BOOKS', 'STORIES',
-  'TALES', 'FABLES', 'MYTHS', 'JOKES', 'LAUGHS', 'SMILES', 'FROWNS', 'TEARS', 'SIGHS', 'CRIES',
-  'GHOST', 'SHADOW', 'DREAM', 'VISIONS', 'SPACES', 'ALIENS', 'ROBOTS', 'TECH', 'CHIPS', 'WIRES',
-  'CODES', 'FILES', 'DATA', 'DISKS', 'DRIVES', 'CLOUDS', 'SERVERS', 'NETS', 'WEB', 'LINKS'
-].map(w => w.length === 5 ? w : w.slice(0, 5)); // Enforce clean 5-letter lengths
+  'CLAY', 'SANDS', 'DUSTS', 'MUDDY', 'SOILS', 
+  'FARMS', 'CROPS', 'GRAINS', 'SEEDS', 'BUDS', 
+  'STEMS', 'ROOTS', 'VINES', 'LEAVES', 'FERNS', 
+  'MOSS', 'WEEDS', 'BUSHES', 'WEEKS', 'MONTHS', 
+  'YEARS', 'HOURS', 'DAYS', 'TIMES', 'AGES', 
+  'DATES', 'CLOCKS', 'WATCHES', 'NOTES', 'SONGS', 
+  'TUNES', 'VOICES', 'SOUNDS', 'WORDS', 'TALES', 
+  'FABLES', 'MYTHS', 'JOKES', 'LAUGHS', 'SMILES', 
+  'FROWNS', 'TEARS', 'SIGHS', 'CRIES', 'SHADOW', 
+  'SPACES', 'ALIENS', 'ROBOTS', 'TECH', 'CHIPS', 
+  'WIRES', 'CODES', 'FILES', 'DATA', 'DISKS', 
+  'DRIVES', 'CLOUDS', 'NETS', 'WEB', 'LINKS'
+];
+
+const targetWordsList = Array.from(
+  new Set(rawTargetWordsList.map(w => w.trim().toUpperCase()).filter(w => w.length === 5))
+);
 
 const isValidEnglishWord = async (word: string): Promise<boolean> => {
   const cleanWord = word.trim().toLowerCase();
   if (cleanWord.length !== 5) return false;
 
   const localThesaurus = new Set(targetWordsList);
-  if (localThesaurus.has(word.toUpperCase())) {
+  if (localThesaurus.has(word.trim().toUpperCase())) {
     return true;
   }
 
@@ -114,7 +113,7 @@ export default function WordGuesserGame() {
     setIsInitialized(true);
   }, []);
 
-  const selectUniqueWord = (levelNum: number): string => {
+  const selectUniqueWord = useCallback((levelNum: number): string => {
     let usedWords: string[] = [];
     try {
       const savedUsed = localStorage.getItem('wordle_used_words');
@@ -139,9 +138,9 @@ export default function WordGuesserGame() {
     }
 
     return chosenWord;
-  };
+  }, []);
 
-  const setupBoard = (lvlNum: number, previousWrongGuesses: string[] = []) => {
+  const setupBoard = useCallback((lvlNum: number, previousWrongGuesses: string[] = []) => {
     const correctWord = selectUniqueWord(lvlNum);
     
     setActiveWord(correctWord);
@@ -155,13 +154,13 @@ export default function WordGuesserGame() {
     if (hiddenInputRef.current) {
       hiddenInputRef.current.focus();
     }
-  };
+  }, [selectUniqueWord]);
 
   useEffect(() => {
     if (isInitialized) {
       setupBoard(currentGlobalLevel);
     }
-  }, [currentGlobalLevel, isInitialized]);
+  }, [currentGlobalLevel, isInitialized, setupBoard]);
 
   const playSuccessJingle = () => {
     try {
@@ -462,7 +461,7 @@ export default function WordGuesserGame() {
         </div>
       </header>
 
-      <section className="w-full max-w-md mx-auto my-auto py-6 px-2 z-10 flex flex-col items-center justify-center relative">
+      <section className="w-full max-w-md mx-auto my-auto py-4 px-2 z-10 flex flex-col items-center justify-center relative">
         {isCompletedState && (
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce whitespace-nowrap">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
@@ -471,13 +470,24 @@ export default function WordGuesserGame() {
           </div>
         )}
 
-        <div className={`flex flex-col items-center justify-center gap-2.5 w-full max-w-[340px] sm:max-w-[390px] bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-2xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
-          
-          <div className="text-center mb-1">
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Word Guesser</h2>
-            <p className="text-xs text-slate-500">Tap anywhere to type with your keyboard</p>
+        <div className="w-full max-w-[340px] sm:max-w-[390px] bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200/80 shadow-sm mb-3 text-[11px] sm:text-xs text-slate-600 space-y-1">
+          <div className="font-extrabold text-slate-900 uppercase tracking-tight flex items-center justify-between">
+            <span>How to Play</span>
+            <span className="text-[10px] font-normal text-slate-500">6 tries per word</span>
           </div>
+          <div className="grid grid-cols-1 gap-0.5 leading-tight">
+            <div>• Guess the <strong className="text-slate-900">5-letter</strong> word. Type & hit <strong className="text-slate-900">Enter</strong>.</div>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span>• Hints:</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold bg-[#059669] text-white">Green (Right Spot)</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold bg-[#D97706] text-white">Yellow (Wrong Spot)</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold bg-[#94A3B8] text-white">Gray (Missing)</span>
+            </div>
+          </div>
+        </div>
 
+        <div className={`flex flex-col items-center justify-center gap-2.5 w-full max-w-[340px] sm:max-w-[390px] bg-white/90 backdrop-blur-xl p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-2xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+          
           <div className="grid grid-rows-6 gap-2 w-full">
             {Array.from({ length: 6 }).map((_, rIdx) => {
               const isSubmitted = rIdx < guesses.length;
@@ -506,7 +516,7 @@ export default function WordGuesserGame() {
                     return (
                       <div
                         key={cIdx}
-                        className={`h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center font-black text-2xl sm:text-3xl transition-all mx-auto ${tileStyle} ${
+                        className={`h-11 w-11 sm:h-13 sm:w-13 rounded-2xl flex items-center justify-center font-black text-xl sm:text-2xl transition-all mx-auto ${tileStyle} ${
                           isCursorActive ? 'border-2 border-[#2563EB] ring-4 ring-[#2563EB]/20' : ''
                         } ${isWinningRow && isCompletedState ? 'animate-bounce opacity-95 scale-105' : ''}`}
                       >
