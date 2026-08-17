@@ -114,24 +114,34 @@ export default function JournalPage() {
 
   return (
     <main 
-      className="min-h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] p-3 md:p-4 flex flex-col justify-between overflow-x-hidden select-none cursor-text"
+      className="min-h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-x-hidden select-none cursor-text box-border"
       onClick={triggerFocusKeyboard}
     >
       
-      <nav className="w-full max-w-4xl mx-auto flex justify-between items-center bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-slate-200 text-slate-900 pointer-events-auto">
+      {/* Top Professional Navigation Header */}
+      <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 flex justify-between items-center shrink-0 shadow-xs pointer-events-auto">
+        <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
+          <span className="font-extrabold text-sm tracking-tight text-[#0F172A]">
+            Free Brain Gain <span className="text-[#2563EB]">Portal</span>
+          </span>
+        </Link>
+
         <div className="flex items-center gap-2">
-          <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
-            <span className="font-extrabold text-xs tracking-tight text-slate-900">
-              Free Brain Gain
-            </span>
+          <Link 
+            href="/games" 
+            className="px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
+          >
+            Games
+          </Link>
+          <Link 
+            href="/journal" 
+            className="px-3.5 py-1.5 bg-[#2563EB] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-xs"
+          >
+            Journal
           </Link>
         </div>
-        <div className="flex gap-2">
-          <Link href="/games" className="px-3.5 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-extrabold transition-colors shadow-sm">Games</Link>
-          <Link href="/journal" className="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-extrabold transition-colors">Journal</Link>
-        </div>
-      </nav>
+      </header>
 
       <div className="w-full max-w-4xl mx-auto bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-4 pointer-events-auto my-3">
         
@@ -270,9 +280,11 @@ export default function JournalPage() {
         </form>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto text-center text-xs font-bold text-slate-500 pb-1">
-        Daily Companion Journal
-      </div>
+      {/* Footer */}
+      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0 mt-4">
+        <p className="uppercase tracking-widest font-semibold">Free Brain Gain Portal</p>
+        <p className="font-mono text-[#94A3B8]">© {new Date().getFullYear()}</p>
+      </footer>
 
     </main>
   );
