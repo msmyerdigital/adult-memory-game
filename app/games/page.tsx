@@ -105,30 +105,34 @@ export default function GamesPage() {
         const maxT = Math.round(data.daily.temperature_2m_max[0] || 16);
         const minT = Math.round(data.daily.temperature_2m_min[0] || 9);
 
-        // Find current hour index based on matching local time formatting or closest hour
-        const nowHour = new Date().getHours();
         const hourlyTimes: string[] = data.hourly.time;
+        const nowIso = new Date().toISOString().slice(0, 13); // e.g. "2026-06-06T14"
         
-        let nowIndex = hourlyTimes.findIndex((t: string) => {
-          const itemDate = new Date(t);
-          return itemDate.getDate() === new Date().getDate() && itemDate.getHours() === nowHour;
-        });
+        let nowIndex = hourlyTimes.findIndex((t: string) => t.startsWith(nowIso));
+        if (nowIndex === -1) {
+          // Fallback to finding the closest upcoming hour timestamp
+          const currentTimeMs = new Date().getTime();
+          nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= currentTimeMs);
+          if (nowIndex === -1) nowIndex = 0;
+        }
 
-        if (nowIndex === -1) nowIndex = 0;
-
-        const nextHours = hourlyTimes.slice(nowIndex, nowIndex + 5).map((timeStr: string, idx: number) => {
+        const nextHours = [];
+        for (let idx = 0; idx < 5; idx++) {
           const actualIdx = nowIndex + idx;
-          const dateObj = new Date(timeStr);
-          const timeLabel = idx === 0 ? 'Now' : dateObj.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
-          return {
-            time: timeLabel,
-            temp: Math.round(data.hourly.temperature_2m[actualIdx]),
-            condition: getWeatherDescription(data.hourly.weather_code[actualIdx]),
-          };
-        });
+          if (actualIdx < hourlyTimes.length) {
+            const timeStr = hourlyTimes[actualIdx];
+            const dateObj = new Date(timeStr);
+            const timeLabel = idx === 0 ? 'Now' : dateObj.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+            nextHours.push({
+              time: timeLabel,
+              temp: Math.round(data.hourly.temperature_2m[actualIdx]),
+              condition: getWeatherDescription(data.hourly.weather_code[actualIdx]),
+            });
+          }
+        }
 
         const nextDays = data.daily.time.slice(0, 5).map((timeStr: string, idx: number) => {
-          const dateObj = new Date(timeStr + 'T00:00:00'); // Force local interpretation
+          const dateObj = new Date(timeStr + 'T00:00:00');
           const dayLabel = idx === 0 ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
           return {
             day: dayLabel,
