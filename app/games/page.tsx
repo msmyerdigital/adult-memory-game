@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function GamesPage() {
-  const [currentDate, setCurrentDate] = useState('');
+  const [currentDateTime, setCurrentDateTime] = useState('');
+  const [locationName, setLocationName] = useState('Detecting location...');
 
   const gamesList = [
     {
@@ -39,12 +40,53 @@ export default function GamesPage() {
   ];
 
   useEffect(() => {
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      month: 'short', 
-      day: 'numeric'
+    // Format date and time (e.g., "Monday, Aug 17, 5:39 PM")
+    const updateDateTime = () => {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      const timeStr = now.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      setCurrentDateTime(`${dateStr}, ${timeStr}`);
     };
-    setCurrentDate(new Date().toLocaleDateString('en-US', options));
+
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 10000);
+
+    // Fetch user location via browser Geolocation API and reverse geocode
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+              { headers: { 'Accept-Language': 'en' } }
+            );
+            const data = await res.json();
+            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.state || 'Local Area';
+            const country = data.address?.country_code ? data.address.country_code.toUpperCase() : '';
+            setLocationName(country ? `${city}, ${country}` : city);
+          } catch {
+            setLocationName('Location available');
+          }
+        },
+        () => {
+          setLocationName('Melbourne'); // Graceful fallback
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      setLocationName('Melbourne');
+    }
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -75,70 +117,100 @@ export default function GamesPage() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <section className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col gap-4">
+      {/* Main Responsive Grid Layout (Restored Sidebar Slot for Date & Location) */}
+      <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 grid md:grid-cols-12 gap-4 items-start">
         
-        <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-5 py-4 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
-              Cognitive Fitness Hub
-            </span>
-            <h1 className="text-lg sm:text-xl font-black text-[#0F172A] mt-1">
-              Select a game to begin training
-            </h1>
+        {/* Column 2 (Games Section) */}
+        <div className="md:col-span-8 order-1 md:order-2 flex flex-col gap-3 min-h-0">
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-3 shadow-xs shrink-0 flex items-center justify-between">
+            <div>
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
+                Cognitive Fitness Hub
+              </span>
+              <h1 className="text-sm sm:text-base font-black text-[#0F172A] mt-0.5">
+                Select a game to begin training
+              </h1>
+            </div>
+            <span className="text-xs font-bold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
           </div>
-          <span className="text-xs font-bold text-[#64748B] hidden sm:inline">{currentDate}</span>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {gamesList.map((game, i) => (
-            <Link 
-              key={i} 
-              href={game.link}
-              className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
-            >
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
-                    {game.badge}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {gamesList.map((game, i) => (
+              <Link 
+                key={i} 
+                href={game.link}
+                className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
+                      {game.badge}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 items-center my-1">
+                    <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
+                      <Image 
+                        src={game.image} 
+                        alt={game.title} 
+                        fill 
+                        sizes="140px"
+                        className="object-cover group-hover:scale-110 transition-transform duration-300" 
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-base sm:text-lg font-black text-[#0F172A] group-hover:text-[#2563EB] transition leading-tight truncate">
+                        {game.title}
+                      </h2>
+                      <p className="text-xs text-[#475569] mt-1 font-medium leading-snug line-clamp-2">
+                        {game.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center mt-3">
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
+                  <span className="text-xs font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
+                    Play ➔
                   </span>
                 </div>
-
-                <div className="flex gap-4 items-center my-1">
-                  <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
-                    <Image 
-                      src={game.image} 
-                      alt={game.title} 
-                      fill 
-                      sizes="140px"
-                      className="object-cover group-hover:scale-110 transition-transform duration-300" 
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-base sm:text-lg font-black text-[#0F172A] group-hover:text-[#2563EB] transition leading-tight truncate">
-                      {game.title}
-                    </h2>
-                    <p className="text-xs text-[#475569] mt-1 font-medium leading-snug line-clamp-2">
-                      {game.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-[#E2E8F0] flex justify-between items-center mt-4">
-                <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
-                <span className="text-xs font-extrabold text-[#2563EB] bg-[#EFF6FF] px-3 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
-                  Play ➔
-                </span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
+
+        {/* Column 1 (Date, Time, & Geolocation Sidebar Component) */}
+        <aside aria-label="Current Date and Location" className="md:col-span-4 order-2 md:order-1 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
+              <span className="font-extrabold text-[#059669] text-xs flex items-center gap-1">
+                <span>📍</span> {locationName}
+              </span>
+              <span className="text-[9px] font-bold uppercase tracking-widest bg-[#EFF6FF] text-[#2563EB] px-2 py-0.5 rounded">
+                Live
+              </span>
+            </div>
+
+            <div className="py-2">
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
+                Today is:
+              </span>
+              <p className="text-sm sm:text-base font-black text-[#0F172A] leading-snug">
+                {currentDateTime || 'Loading time...'}
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-3 mt-3 border-t border-[#E2E8F0] text-[10px] text-[#64748B] font-medium">
+            Location retrieved securely via browser permissions.
+          </div>
+        </aside>
 
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-3 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0 mt-4">
+      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0 mt-4">
         <p className="uppercase tracking-widest font-semibold">Free Brain Gain Portal</p>
         <p className="font-mono text-[#94A3B8]">© {new Date().getFullYear()}</p>
       </footer>
