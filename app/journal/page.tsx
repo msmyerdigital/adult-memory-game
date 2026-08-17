@@ -7,25 +7,10 @@ export default function JournalPage() {
   const [selectedMood, setSelectedMood] = useState('Happy');
   const [selectedPain, setSelectedPain] = useState<number | null>(null);
   const [note, setNote] = useState('');
-  const [lovedOneName, setLovedOneName] = useState('');
-  const [lovedOnePhone, setLovedOnePhone] = useState('');
-  const [isEditingContact, setIsEditingContact] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    const savedName = localStorage.getItem('lovedOneName');
-    const savedPhone = localStorage.getItem('lovedOnePhone');
-    
-    if (savedName) setLovedOneName(savedName);
-    if (savedPhone) {
-      setLovedOnePhone(savedPhone);
-    } else {
-      setIsEditingContact(true);
-    }
-  }, []);
 
   const moods = [
     { 
@@ -59,48 +44,37 @@ export default function JournalPage() {
     { level: 10, face: '😢' },
   ];
 
-  const handleSaveContact = (e: React.FormEvent) => {
+  const handleSaveJournal = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('lovedOneName', lovedOneName);
-    localStorage.setItem('lovedOnePhone', lovedOnePhone);
-    setIsEditingContact(false);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!lovedOnePhone) {
-      setStatusMessage({ text: 'Please set your loved one contact info first.', isError: true });
-      setIsEditingContact(true);
-      return;
-    }
-
     setLoading(true);
     setStatusMessage(null);
 
-    const activePainObj = medicalPainScale.find(p => p.level === selectedPain);
-    const painDescription = activePainObj !== undefined ? `Pain Level: ${activePainObj.level}/10` : 'Pain Level: Not specified';
-    const fullNote = `${note}\n\n${painDescription}`.trim();
-
     try {
-      const response = await fetch('/api/send-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          mood: selectedMood, 
-          note: fullNote, 
-          recipientPhone: lovedOnePhone,
-          recipientName: lovedOneName 
-        }),
-      });
+      const activePainObj = medicalPainScale.find(p => p.level === selectedPain);
+      const painDescription = activePainObj !== undefined ? `Pain Level: ${activePainObj.level}/10` : 'Pain Level: Not specified';
 
-      if (response.ok) {
-        setStatusMessage({ text: `Entry saved and sent to ${lovedOneName || 'Loved One'}!`, isError: false });
-        setNote('');
-      } else {
-        throw new Error('Failed to send.');
-      }
+      const newEntry = {
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        mood: selectedMood,
+        pain: painDescription,
+        note: note.trim(),
+      };
+
+      const existingEntries = JSON.parse(localStorage.getItem('journalEntries') || '[]');
+      const updatedEntries = [newEntry, ...existingEntries];
+      localStorage.setItem('journalEntries', JSON.stringify(updatedEntries));
+
+      setNote('');
+      setStatusMessage({ text: 'Entry saved locally to your journal!', isError: false });
     } catch {
-      setStatusMessage({ text: 'Saved locally.', isError: true });
+      setStatusMessage({ text: 'Failed to save entry locally.', isError: true });
     } finally {
       setLoading(false);
     }
@@ -127,18 +101,24 @@ export default function JournalPage() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <Link 
             href="/games" 
-            className="px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
+            className="px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-[11px] uppercase tracking-wider rounded transition"
           >
             Games
           </Link>
           <Link 
             href="/journal" 
-            className="px-3.5 py-1.5 bg-[#2563EB] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-xs"
+            className="px-3 py-1.5 bg-[#2563EB] text-[#FFFFFF] font-extrabold text-[11px] uppercase tracking-wider rounded transition shadow-xs"
           >
             Journal
+          </Link>
+          <Link 
+            href="/journal/history" 
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] uppercase tracking-wider rounded transition shadow-xs"
+          >
+            See your journal
           </Link>
         </div>
       </header>
@@ -147,59 +127,14 @@ export default function JournalPage() {
         
         <div className="bg-slate-50 p-3 px-4 rounded-2xl border border-slate-200 flex justify-between items-center">
           <div>
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block mb-0.5">Loved One Contact</span>
+            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold block mb-0.5">Private Local Storage</span>
             <span className="text-sm md:text-base text-slate-900 font-bold">
-              {lovedOneName ? `${lovedOneName} (${lovedOnePhone || 'No phone'})` : (lovedOnePhone || 'Not set yet')}
+              Your entries stay safe and private on this device.
             </span>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsEditingContact(!isEditingContact);
-            }}
-            className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold transition-colors shadow-sm"
-          >
-            {isEditingContact ? 'Close' : 'Change'}
-          </button>
         </div>
 
-        {isEditingContact && (
-          <form onSubmit={handleSaveContact} onClick={(e) => e.stopPropagation()} className="flex flex-col gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-slate-700">Loved One's Name</label>
-              <input
-                type="text"
-                value={lovedOneName}
-                onChange={(e) => setLovedOneName(e.target.value)}
-                placeholder="e.g. Sarah"
-                className="p-3 rounded-xl border border-slate-200 text-sm outline-none bg-white text-slate-900 focus:border-[#2563EB]"
-                required
-              />
-            </div>
-            
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-slate-700">Loved One's Phone Number</label>
-              <input
-                type="tel"
-                value={lovedOnePhone}
-                onChange={(e) => setLovedOnePhone(e.target.value)}
-                placeholder="e.g. +1234567890"
-                className="p-3 rounded-xl border border-slate-200 text-sm outline-none bg-white text-slate-900 focus:border-[#2563EB]"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="py-2.5 px-4 bg-[#059669] text-white border-none rounded-xl text-sm font-extrabold hover:bg-[#047857] transition-colors mt-1 shadow-sm"
-            >
-              Save Contact
-            </button>
-          </form>
-        )}
-
-        <form onSubmit={handleSave} onClick={(e) => e.stopPropagation()} className="flex flex-col gap-4">
+        <form onSubmit={handleSaveJournal} onClick={(e) => e.stopPropagation()} className="flex flex-col gap-4">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
@@ -269,7 +204,7 @@ export default function JournalPage() {
             disabled={loading}
             className="w-full py-3 bg-[#2563EB] text-white text-base font-black uppercase tracking-wider rounded-2xl shadow-md hover:bg-[#1D4ED8] transition-all disabled:opacity-50"
           >
-            {loading ? 'Sending...' : `Save & Text ${lovedOneName || 'Loved One'}`}
+            {loading ? 'Saving...' : 'Save my journal'}
           </button>
 
           {statusMessage && (
