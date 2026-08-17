@@ -180,16 +180,16 @@ export default function GamesPage() {
   }, []);
 
   const weatherContent = (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       {/* Right now the weather outside is: */}
       <div>
-        <span className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider block mb-1">
+        <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
           Right now the weather outside is:
         </span>
-        <div className="flex items-center justify-between bg-[#F8FAFC] px-3 py-2 rounded-lg border border-[#E2E8F0]">
+        <div className="flex items-center justify-between bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0]">
           <div className="flex items-center gap-2">
-            <span className="text-xl">{getWeatherEmoji(currentWeather.condition)}</span>
-            <span className="font-extrabold text-sm text-[#0F172A]">{currentWeather.condition}</span>
+            <span className="text-2xl">{getWeatherEmoji(currentWeather.condition)}</span>
+            <span className="font-bold text-[#0F172A]">{currentWeather.condition}</span>
           </div>
           <span className="text-base font-black text-[#2563EB]">{currentWeather.temp}°C</span>
         </div>
@@ -197,15 +197,15 @@ export default function GamesPage() {
 
       {/* Forecast for the rest of the day */}
       <div>
-        <span className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider block mb-1">
+        <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1.5">
           Forecast for the rest of the day:
         </span>
         <div className="grid grid-cols-5 gap-1 bg-[#F8FAFC] p-1.5 rounded-lg border border-[#E2E8F0] text-center">
           {hourlyForecast.map((hour, idx) => (
             <div key={idx} className="flex flex-col items-center justify-center">
-              <span className="text-[10px] font-extrabold text-[#64748B] truncate w-full">{hour.time}</span>
-              <span className="text-sm my-0.5">{getWeatherEmoji(hour.condition)}</span>
-              <span className="text-xs font-black text-[#0F172A]">{hour.temp}°</span>
+              <span className="text-[9px] font-bold text-[#64748B] truncate w-full">{hour.time}</span>
+              <span className="text-[11px] my-0.5">{getWeatherEmoji(hour.condition)}</span>
+              <span className="text-[10px] font-bold text-[#0F172A]">{hour.temp}°</span>
             </div>
           ))}
         </div>
@@ -213,18 +213,18 @@ export default function GamesPage() {
 
       {/* Sunrise and Sunset Info */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-[#F8FAFC] px-2.5 py-2 rounded-lg border border-[#E2E8F0] flex items-center gap-2">
-          <span className="text-base">🌅</span>
+        <div className="bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0] flex items-center gap-2.5">
+          <span className="text-lg">🌅</span>
           <div>
-            <span className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider block">Sunrise</span>
+            <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block">Sunrise</span>
             <span className="text-xs font-black text-[#0F172A]">{sunriseTime}</span>
           </div>
         </div>
 
-        <div className="bg-[#F8FAFC] px-2.5 py-2 rounded-lg border border-[#E2E8F0] flex items-center gap-2">
-          <span className="text-base">🌇</span>
+        <div className="bg-[#F8FAFC] p-2.5 rounded-lg border border-[#E2E8F0] flex items-center gap-2.5">
+          <span className="text-lg">🌇</span>
           <div>
-            <span className="text-[10px] font-extrabold text-[#64748B] uppercase tracking-wider block">Sunset</span>
+            <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block">Sunset</span>
             <span className="text-xs font-black text-[#0F172A]">{sunsetTime}</span>
           </div>
         </div>
@@ -233,10 +233,10 @@ export default function GamesPage() {
   );
 
   return (
-    <main className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border">
+    <main className="min-h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-y-auto box-border">
       
       {/* Top Professional Navigation Header */}
-      <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2 flex justify-between items-center shrink-0 shadow-xs">
+      <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 flex justify-between items-center shrink-0 shadow-xs">
         <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
           <span className="font-extrabold text-sm tracking-tight text-[#0F172A]">
@@ -247,87 +247,86 @@ export default function GamesPage() {
         <div className="flex items-center gap-2">
           <Link 
             href="/games" 
-            className="px-3 py-1 bg-[#2563EB] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-xs"
+            className="px-3.5 py-1.5 bg-[#2563EB] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-xs"
           >
             Games
           </Link>
           <Link 
             href="/journal" 
-            className="px-3 py-1 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
+            className="px-3.5 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
           >
             Journal
           </Link>
         </div>
       </header>
 
-      {/* Two Parallel Columns Layout (Fit strictly within viewport height to eliminate scrolling) */}
-      <section className="max-w-7xl w-full mx-auto px-4 py-2.5 flex-1 grid md:grid-cols-12 gap-3 items-stretch min-h-0">
+      {/* Two Parallel Columns Layout */}
+      <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 grid md:grid-cols-12 gap-4 items-start">
         
-        {/* Left Column: Date, Time, Location & Weather (35% -> md:col-span-5 lg:col-span-4) */}
-        <aside aria-label="Current Date, Location and Weather" className="md:col-span-5 lg:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3.5 shadow-xs flex flex-col justify-between overflow-y-auto">
-          <div className="flex flex-col gap-3">
+        {/* Left Column: Date, Time & Weather Forecast (Desktop/Tablet) */}
+        <aside aria-label="Current Date, Location and Weather" className="hidden md:flex md:col-span-5 lg:col-span-4 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex-col justify-between overflow-hidden text-xs">
+          <div className="flex flex-col gap-3.5">
             {/* Location */}
             <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
-              <span className="font-black text-xs text-[#059669] flex items-center gap-1">
+              <span className="font-extrabold text-[#059669] text-xs flex items-center gap-1">
                 <span>📍</span> {locationName}
               </span>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#EFF6FF] text-[#2563EB] px-2 py-0.5 rounded">
+              <span className="text-[9px] font-bold uppercase tracking-widest bg-[#EFF6FF] text-[#2563EB] px-2 py-0.5 rounded">
                 Live
               </span>
             </div>
 
-            {/* Today is: Date and Time (Larger font size) */}
+            {/* Today is: Date and Time */}
             <div>
-              <span className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider block mb-1">
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
                 Today is:
               </span>
-              <p className="text-base sm:text-lg font-black text-[#0F172A] leading-tight">
+              <p className="text-sm sm:text-base font-black text-[#0F172A] leading-snug">
                 {currentDateTime || 'Loading time...'}
               </p>
             </div>
 
-            {/* Weather section for Desktop/Tablet (Left column) */}
-            <div className="hidden md:block pt-1">
+            <div className="pt-2 border-t border-[#E2E8F0]">
               {weatherContent}
             </div>
           </div>
         </aside>
 
-        {/* Right Column: Games Hub (65%) */}
-        <div className="md:col-span-7 lg:col-span-8 flex flex-col gap-2.5 min-h-0">
-          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-2.5 shadow-xs shrink-0 flex items-center justify-between">
+        {/* Right Column: Games Hub */}
+        <div className="w-full md:col-span-7 lg:col-span-8 flex flex-col gap-3 min-h-0">
+          <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-3 shadow-xs shrink-0 flex items-center justify-between">
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
                 Cognitive Fitness Hub
               </span>
-              <h1 className="text-base sm:text-lg font-black text-[#0F172A] mt-0.5">
+              <h1 className="text-sm sm:text-base font-black text-[#0F172A] mt-0.5">
                 Select a game to begin training
               </h1>
             </div>
-            <span className="text-xs font-extrabold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
+            <span className="text-xs font-bold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-h-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {gamesList.map((game, i) => (
               <Link 
                 key={i} 
                 href={game.link}
-                className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
+                className="bg-[#FFFFFF] border-2 border-[#CBD5E1] hover:border-[#2563EB] rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC]"
               >
                 <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest bg-[#2563EB] text-[#FFFFFF] px-2 py-0.5 rounded shadow-xs">
                       {game.badge}
                     </span>
                   </div>
 
-                  <div className="flex gap-3.5 items-center my-0.5">
-                    <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
+                  <div className="flex gap-4 items-center my-1">
+                    <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
                       <Image 
                         src={game.image} 
                         alt={game.title} 
                         fill 
-                        sizes="120px"
+                        sizes="140px"
                         className="object-cover group-hover:scale-110 transition-transform duration-300" 
                       />
                     </div>
@@ -335,16 +334,16 @@ export default function GamesPage() {
                       <h2 className="text-base sm:text-lg font-black text-[#0F172A] group-hover:text-[#2563EB] transition leading-tight truncate">
                         {game.title}
                       </h2>
-                      <p className="text-xs sm:text-sm text-[#475569] mt-1 font-bold leading-snug line-clamp-2">
+                      <p className="text-xs text-[#475569] mt-1 font-medium leading-snug line-clamp-2">
                         {game.description}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center mt-2">
-                  <span className="text-[11px] font-extrabold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
-                  <span className="text-xs font-black text-[#2563EB] bg-[#EFF6FF] px-2.5 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
+                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between items-center mt-3">
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">Tap to Play</span>
+                  <span className="text-xs font-extrabold text-[#2563EB] bg-[#EFF6FF] px-2.5 py-1 rounded group-hover:bg-[#2563EB] group-hover:text-[#FFFFFF] transition">
                     Play ➔
                   </span>
                 </div>
@@ -352,18 +351,41 @@ export default function GamesPage() {
             ))}
           </div>
 
-          {/* Weather section placed at the end for Mobile view */}
-          <div className="md:hidden bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3 shadow-xs shrink-0">
-            {weatherContent}
+          {/* Mobile view: Date, Location & Weather panel placed below the games list, allowing full scrolling */}
+          <div className="md:hidden bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-4 shadow-xs flex flex-col justify-between text-xs mt-1">
+            <div className="flex flex-col gap-3.5">
+              <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
+                <span className="font-extrabold text-[#059669] text-xs flex items-center gap-1">
+                  <span>📍</span> {locationName}
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-widest bg-[#EFF6FF] text-[#2563EB] px-2 py-0.5 rounded">
+                  Live
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
+                  Today is:
+                </span>
+                <p className="text-sm font-black text-[#0F172A] leading-snug">
+                  {currentDateTime || 'Loading time...'}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-[#E2E8F0]">
+                {weatherContent}
+              </div>
+            </div>
           </div>
+
         </div>
 
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0">
-        <p className="uppercase tracking-widest font-extrabold">Free Brain Gain Portal</p>
-        <p className="font-mono font-bold text-[#94A3B8]">© {new Date().getFullYear()}</p>
+      <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 text-center text-[10px] text-[#64748B] flex justify-between items-center shrink-0 mt-4">
+        <p className="uppercase tracking-widest font-semibold">Free Brain Gain Portal</p>
+        <p className="font-mono text-[#94A3B8]">© {new Date().getFullYear()}</p>
       </footer>
 
     </main>
