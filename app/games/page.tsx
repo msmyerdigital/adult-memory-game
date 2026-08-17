@@ -106,15 +106,10 @@ export default function GamesPage() {
         const minT = Math.round(data.daily.temperature_2m_min[0] || 9);
 
         const hourlyTimes: string[] = data.hourly.time;
-        const nowIso = new Date().toISOString().slice(0, 13); // e.g. "2026-06-06T14"
+        const currentTimeMs = new Date().getTime();
         
-        let nowIndex = hourlyTimes.findIndex((t: string) => t.startsWith(nowIso));
-        if (nowIndex === -1) {
-          // Fallback to finding the closest upcoming hour timestamp
-          const currentTimeMs = new Date().getTime();
-          nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= currentTimeMs);
-          if (nowIndex === -1) nowIndex = 0;
-        }
+        let nowIndex = hourlyTimes.findIndex((t: string) => new Date(t).getTime() >= currentTimeMs);
+        if (nowIndex === -1) nowIndex = 0;
 
         const nextHours = [];
         for (let idx = 0; idx < 5; idx++) {
@@ -153,25 +148,8 @@ export default function GamesPage() {
       }
     };
 
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
-            const geoData = await geoRes.json();
-            const city = geoData.city || geoData.locality || geoData.principalSubdivision || 'Melbourne';
-            fetchWeather(latitude, longitude, city);
-          } catch {
-            fetchWeather(-37.8136, 144.9631, 'Melbourne');
-          }
-        },
-        () => fetchWeather(-37.8136, 144.9631, 'Melbourne'),
-        { timeout: 5000 }
-      );
-    } else {
-      fetchWeather(-37.8136, 144.9631, 'Melbourne');
-    }
+    // Fixed default coordinates for Melbourne (no permission prompt required)
+    fetchWeather(-37.8136, 144.9631, 'Melbourne');
   }, []);
 
   return (
