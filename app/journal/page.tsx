@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 
 export default function JournalPage() {
@@ -94,7 +94,7 @@ export default function JournalPage() {
       
       {/* Top Professional Navigation Header */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 sm:px-6 py-2.5 flex justify-between items-center shrink-0 shadow-xs pointer-events-auto">
-        <Link href="https://freebraingain.vercel.app/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
           <span className="font-extrabold text-sm tracking-tight text-[#0F172A]">
             Free Brain Gain <span className="text-[#2563EB]">Portal</span>
