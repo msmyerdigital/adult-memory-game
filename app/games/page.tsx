@@ -23,23 +23,8 @@ export default function GamesPage() {
   const [currentTemp, setCurrentTemp] = useState(14);
   const [currentCondition, setCurrentCondition] = useState('Mostly cloudy');
   const [highLow, setHighLow] = useState({ high: 16, low: 9 });
-  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([
-    { time: 'Now', temp: 14, condition: 'Cloudy' },
-    { time: '11 AM', temp: 15, condition: 'Cloudy' },
-    { time: '12 PM', temp: 16, condition: 'Sunny' },
-    { time: '1 PM', temp: 16, condition: 'Sunny' },
-    { time: '2 PM', temp: 15, condition: 'Showers' },
-    { time: '3 PM', temp: 14, condition: 'Showers' },
-  ]);
-  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([
-    { day: 'Today', maxTemp: 16, minTemp: 9, condition: 'Showers' },
-    { day: 'Sat', maxTemp: 15, minTemp: 8, condition: 'Sunny' },
-    { day: 'Sun', maxTemp: 17, minTemp: 10, condition: 'Cloudy' },
-    { day: 'Mon', maxTemp: 14, minTemp: 8, condition: 'Rainy' },
-    { day: 'Tue', maxTemp: 16, minTemp: 9, condition: 'Sunny' },
-    { day: 'Wed', maxTemp: 18, minTemp: 11, condition: 'Sunny' },
-    { day: 'Thu', maxTemp: 15, minTemp: 9, condition: 'Cloudy' },
-  ]);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecast[]>([]);
+  const [dailyForecast, setDailyForecast] = useState<DailyForecast[]>([]);
 
   const gamesList = [
     {
@@ -120,10 +105,19 @@ export default function GamesPage() {
         const maxT = Math.round(data.daily.temperature_2m_max[0] || 16);
         const minT = Math.round(data.daily.temperature_2m_min[0] || 9);
 
-        const nowIndex = data.hourly.time.findIndex((t: string) => new Date(t).getTime() >= Date.now()) || 0;
-        const sliceStart = Math.max(0, nowIndex);
-        const nextHours = data.hourly.time.slice(sliceStart, sliceStart + 5).map((timeStr: string, idx: number) => {
-          const actualIdx = sliceStart + idx;
+        // Find current hour index based on matching local time formatting or closest hour
+        const nowHour = new Date().getHours();
+        const hourlyTimes: string[] = data.hourly.time;
+        
+        let nowIndex = hourlyTimes.findIndex((t: string) => {
+          const itemDate = new Date(t);
+          return itemDate.getDate() === new Date().getDate() && itemDate.getHours() === nowHour;
+        });
+
+        if (nowIndex === -1) nowIndex = 0;
+
+        const nextHours = hourlyTimes.slice(nowIndex, nowIndex + 5).map((timeStr: string, idx: number) => {
+          const actualIdx = nowIndex + idx;
           const dateObj = new Date(timeStr);
           const timeLabel = idx === 0 ? 'Now' : dateObj.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
           return {
@@ -134,7 +128,7 @@ export default function GamesPage() {
         });
 
         const nextDays = data.daily.time.slice(0, 5).map((timeStr: string, idx: number) => {
-          const dateObj = new Date(timeStr);
+          const dateObj = new Date(timeStr + 'T00:00:00'); // Force local interpretation
           const dayLabel = idx === 0 ? 'Today' : dateObj.toLocaleDateString('en-US', { weekday: 'short' });
           return {
             day: dayLabel,
@@ -151,7 +145,7 @@ export default function GamesPage() {
         if (nextHours.length > 0) setHourlyForecast(nextHours);
         if (nextDays.length > 0) setDailyForecast(nextDays);
       } catch {
-        // Fallback silently if API fails
+        // Fallback or keep defaults silently
       }
     };
 
@@ -204,12 +198,11 @@ export default function GamesPage() {
         </div>
       </header>
 
-      {/* Main Responsive Grid Layout (Games first on mobile, weather second) */}
+      {/* Main Responsive Grid Layout */}
       <section className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 flex-1 grid md:grid-cols-12 gap-4 items-start">
         
-        {/* Column 2 (Games Section): Appears first on mobile using `order-1 md:order-2`, 8 cols on desktop */}
+        {/* Column 2 (Games Section) */}
         <div className="md:col-span-8 order-1 md:order-2 flex flex-col gap-3 min-h-0">
-          
           <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl px-4 py-3 shadow-xs shrink-0 flex items-center justify-between">
             <div>
               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#2563EB] bg-[#EFF6FF] px-2 py-0.5 rounded">
@@ -222,7 +215,6 @@ export default function GamesPage() {
             <span className="text-xs font-bold text-[#475569] hidden sm:inline">Daily Mental Enrichment</span>
           </div>
 
-          {/* 4 Games Grid with Larger Image Containers */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {gamesList.map((game, i) => (
               <Link 
@@ -238,7 +230,6 @@ export default function GamesPage() {
                   </div>
 
                   <div className="flex gap-4 items-center my-1">
-                    {/* Enlarged Image Box */}
                     <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl overflow-hidden border border-[#CBD5E1] shrink-0 bg-[#F1F5F9] shadow-inner">
                       <Image 
                         src={game.image} 
@@ -268,10 +259,9 @@ export default function GamesPage() {
               </Link>
             ))}
           </div>
-
         </div>
 
-        {/* Column 1 (Weather Widget): Appears after games on mobile using `order-2 md:order-1`, 4 cols on desktop */}
+        {/* Column 1 (Weather Widget) */}
         <aside aria-label="Weather Forecast" className="md:col-span-4 order-2 md:order-1 bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-3.5 shadow-xs flex flex-col justify-between overflow-hidden text-xs">
           <div>
             <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
