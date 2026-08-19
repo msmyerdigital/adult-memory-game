@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface JournalEntry {
   id: string;
@@ -23,13 +25,10 @@ export default function JournalPage() {
   const [exerciseStatus, setExerciseStatus] = useState('Yes');
   const [socialStatus, setSocialStatus] = useState('Yes');
   const [content, setContent] = useState('');
-  const [savedSuccess, setSavedSuccess] = useState(false);
 
   // History states
   const [pastEntries, setPastEntries] = useState<JournalEntry[]>([]);
-  const [showEmailBox, setShowEmailBox] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [emailSent, setEmailSent] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Load entries on mount
   useEffect(() => {
@@ -67,24 +66,69 @@ export default function JournalPage() {
     setPastEntries(updatedEntries);
     localStorage.setItem('brain_gain_journal_entries', JSON.stringify(updatedEntries));
 
+    // Reset form fields
     setContent('');
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    setMood('Happy');
+    setPainLevel(0);
+    setExerciseStatus('Yes');
+    setSocialStatus('Yes');
+
+    // Immediately switch view to the history view
+    setCurrentView('history');
   };
 
-  const handleSendEmail = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailInput.trim()) return;
+  const handleDownloadPDF = () => {
+    setIsGenerating(true);
+    const doc = new jsPDF();
     
-    const journalSummary = pastEntries.map(entry => 
-      `Date: ${entry.dateStr}\nMood: ${entry.mood} | Pain: ${entry.painLevel}/10 | Activity: ${entry.exerciseStatus} | Social: ${entry.socialStatus}\n\nContent:\n${entry.content}\n-------------------\n`
-    ).join('\n');
-
-    const subject = encodeURIComponent('My Journal History & Questionnaire Results');
-    const body = encodeURIComponent(journalSummary);
+    // Title
+    doc.setFontSize(18);
+    doc.text('Journal History Report', 14, 22);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
     
-    window.location.href = `mailto:${emailInput}?subject=${subject}&body=${body}`;
-    setEmailSent(true);
+    let yPos = 40;
+    
+    pastEntries.forEach((entry, index) => {
+      // Check for page break
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      // Header for each entry
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Entry #${index + 1}: ${entry.dateStr}`, 14, yPos);
+      yPos += 8;
+      
+      // Details Table
+      const tableData = [
+        ['Mood', entry.mood, 'Pain Level', `${entry.painLevel}/10`],
+        ['Activity', entry.exerciseStatus, 'Social', entry.socialStatus]
+      ];
+      
+      autoTable(doc, {
+        startY: yPos,
+        body: tableData,
+        theme: 'grid',
+        styles: { fontSize: 10, cellPadding: 2 },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 30 }, 2: { fontStyle: 'bold', cellWidth: 30 } },
+        margin: { left: 14 }
+      });
+      
+      yPos = (doc as any).lastAutoTable.finalY + 6;
+      
+      // Content
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const splitContent = doc.splitTextToSize(entry.content, 180);
+      doc.text(splitContent, 14, yPos);
+      yPos += (splitContent.length * 6) + 10;
+    });
+    
+    doc.save('journal-history.pdf');
+    setIsGenerating(false);
   };
 
   return (
@@ -93,7 +137,7 @@ export default function JournalPage() {
       {/* Top Header */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2.5 flex justify-between items-center shrink-0 shadow-xs">
         <span className="font-bold text-xs tracking-wider text-[#000000] uppercase">
-          {currentView === 'form' ? 'Daily Wellness Journal' : 'Journal History & Results'}
+          {currentView === 'form' ? 'Clinical Wellness Journal' : 'Journal History & Results'}
         </span>
 
         <div className="flex items-center gap-2">
@@ -202,12 +246,7 @@ export default function JournalPage() {
               />
             </div>
 
-            <div className="flex justify-between items-center pt-2">
-              {savedSuccess ? (
-                <span className="text-xs font-bold text-[#16A34A]">Entry saved successfully!</span>
-              ) : (
-                <span />
-              )}
+            <div className="flex justify-end pt-2">
               <button 
                 type="submit"
                 className="px-6 py-2.5 bg-[#0284C7] hover:bg-[#0369A1] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider rounded transition shadow-xs"
@@ -253,47 +292,16 @@ export default function JournalPage() {
             )}
           </div>
 
-          {/* Email Sharing Section */}
+          {/* PDF Download Section */}
           <div className="pt-4 shrink-0">
-            {!showEmailBox ? (
+            {pastEntries.length > 0 && (
               <button
-                onClick={() => setShowEmailBox(true)}
-                className="w-full py-2.5 bg-[#0284C7] hover:bg-[#0369A1] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider rounded transition shadow-xs"
+                onClick={handleDownloadPDF}
+                disabled={isGenerating}
+                className="w-full py-2.5 bg-[#059669] hover:bg-[#047857] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider rounded transition shadow-xs disabled:opacity-50"
               >
-                Do you want to email this journal to someone?
+                {isGenerating ? 'Generating PDF...' : 'Download All Records as PDF'}
               </button>
-            ) : (
-              <form onSubmit={handleSendEmail} className="bg-[#FAFAFA] border border-[#000000] rounded-lg p-4 flex flex-col gap-3 shadow-xs">
-                <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-[#000000]">
-                  <span>Enter recipient email address</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setShowEmailBox(false)}
-                    className="text-xs text-[#000000] hover:underline font-bold"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <input 
-                    type="email" 
-                    required
-                    placeholder="recipient@example.com"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-xs font-bold border border-[#000000] rounded bg-[#FFFFFF] text-[#000000] placeholder:text-[#666666] focus:outline-none"
-                  />
-                  <button 
-                    type="submit"
-                    className="px-4 py-1.5 bg-[#0284C7] hover:bg-[#0369A1] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider rounded transition shadow-xs"
-                  >
-                    Send Email
-                  </button>
-                </div>
-                {emailSent && (
-                  <p className="text-[11px] font-bold text-[#16A34A]">Email client opened with your journal history!</p>
-                )}
-              </form>
             )}
           </div>
         </section>
@@ -301,7 +309,7 @@ export default function JournalPage() {
 
       {/* Footer */}
       <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2 text-center text-[10px] text-[#000000] flex justify-between items-center shrink-0">
-        <p className="uppercase tracking-widest font-bold">Daily Wellness Tracking System</p>
+        <p className="uppercase tracking-widest font-bold">Clinical Wellness Tracking System</p>
         <p className="font-mono font-bold">© {new Date().getFullYear()}</p>
       </footer>
 
