@@ -16,21 +16,17 @@ interface JournalEntry {
 }
 
 export default function JournalPage() {
-  // Navigation state: 'form' for writing, 'history' for past entries
   const [currentView, setCurrentView] = useState<'form' | 'history'>('form');
 
-  // Form states
   const [mood, setMood] = useState('Happy');
   const [painLevel, setPainLevel] = useState(0);
   const [exerciseStatus, setExerciseStatus] = useState('Yes');
   const [socialStatus, setSocialStatus] = useState('Yes');
   const [content, setContent] = useState('');
 
-  // History states
   const [pastEntries, setPastEntries] = useState<JournalEntry[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Load entries on mount
   useEffect(() => {
     const stored = localStorage.getItem('brain_gain_journal_entries');
     if (stored) {
@@ -66,14 +62,12 @@ export default function JournalPage() {
     setPastEntries(updatedEntries);
     localStorage.setItem('brain_gain_journal_entries', JSON.stringify(updatedEntries));
 
-    // Reset form fields
     setContent('');
     setMood('Happy');
     setPainLevel(0);
     setExerciseStatus('Yes');
     setSocialStatus('Yes');
 
-    // Immediately switch view to the history view
     setCurrentView('history');
   };
 
@@ -81,7 +75,6 @@ export default function JournalPage() {
     setIsGenerating(true);
     const doc = new jsPDF();
     
-    // Title
     doc.setFontSize(18);
     doc.text('Journal History Report', 14, 22);
     doc.setFontSize(10);
@@ -90,19 +83,16 @@ export default function JournalPage() {
     let yPos = 40;
     
     pastEntries.forEach((entry, index) => {
-      // Check for page break
       if (yPos > 270) {
         doc.addPage();
         yPos = 20;
       }
       
-      // Header for each entry
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text(`Entry #${index + 1}: ${entry.dateStr}`, 14, yPos);
       yPos += 8;
       
-      // Details Table
       const tableData = [
         ['Mood', entry.mood, 'Pain Level', `${entry.painLevel}/10`],
         ['Activity', entry.exerciseStatus, 'Social', entry.socialStatus]
@@ -119,7 +109,6 @@ export default function JournalPage() {
       
       yPos = (doc as any).lastAutoTable.finalY + 6;
       
-      // Content
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       const splitContent = doc.splitTextToSize(entry.content, 180);
@@ -134,7 +123,6 @@ export default function JournalPage() {
   return (
     <main className="h-dvh w-screen bg-[#FFFFFF] text-[#000000] font-sans flex flex-col justify-between overflow-hidden box-border">
       
-      {/* Top Header */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2.5 flex justify-between items-center shrink-0 shadow-xs">
         <span className="font-bold text-xs tracking-wider text-[#000000] uppercase">
           {currentView === 'form' ? 'Clinical Wellness Journal' : 'Journal History & Results'}
@@ -148,7 +136,6 @@ export default function JournalPage() {
             Games
           </Link>
           
-          {/* Toggle Button for View Past / Write New */}
           {currentView === 'form' ? (
             <button 
               onClick={() => setCurrentView('history')}
@@ -167,16 +154,13 @@ export default function JournalPage() {
         </div>
       </header>
 
-      {/* Conditional Content Area */}
       {currentView === 'form' ? (
-        /* --- WRITING FORM VIEW --- */
         <section className="max-w-4xl w-full mx-auto px-6 py-6 flex-1 flex flex-col justify-center overflow-y-auto">
           <form onSubmit={handleSave} className="bg-[#FAFAFA] border border-[#000000] rounded-xl p-6 flex flex-col gap-5 shadow-xs">
             <h2 className="text-xs uppercase tracking-widest font-bold border-b border-[#000000] pb-2">
               Daily Wellness Questionnaire
             </h2>
 
-            {/* Questionnaire Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-bold">
               <div className="flex flex-col gap-1">
                 <label className="text-[#2563EB]">Mood</label>
@@ -233,7 +217,6 @@ export default function JournalPage() {
               </div>
             </div>
 
-            {/* Journal Textarea */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase tracking-wider">Journal Entry</label>
               <textarea 
@@ -257,7 +240,6 @@ export default function JournalPage() {
           </form>
         </section>
       ) : (
-        /* --- HISTORY VIEW --- */
         <section className="max-w-4xl w-full mx-auto px-6 py-6 flex-1 flex flex-col min-h-0">
           <div className="flex justify-between items-center pb-4 border-b border-[#000000] shrink-0 mb-4">
             <span className="text-xs uppercase tracking-widest text-[#000000] font-bold">
@@ -292,7 +274,6 @@ export default function JournalPage() {
             )}
           </div>
 
-          {/* PDF Download Section */}
           <div className="pt-4 shrink-0">
             {pastEntries.length > 0 && (
               <button
@@ -307,7 +288,6 @@ export default function JournalPage() {
         </section>
       )}
 
-      {/* Footer */}
       <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2 text-center text-[10px] text-[#000000] flex justify-between items-center shrink-0">
         <p className="uppercase tracking-widest font-bold">Clinical Wellness Tracking System</p>
         <p className="font-mono font-bold">© {new Date().getFullYear()}</p>
