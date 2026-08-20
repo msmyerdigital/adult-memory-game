@@ -27,6 +27,18 @@ export default function JournalPage() {
   const [pastEntries, setPastEntries] = useState<JournalEntry[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Greeting based on time of day
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+
+  // Dynamic date string for the header
+  const todayFormatted = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
   useEffect(() => {
     const stored = localStorage.getItem('brain_gain_journal_entries');
     if (stored) {
@@ -125,7 +137,7 @@ export default function JournalPage() {
       
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2.5 flex justify-between items-center shrink-0 shadow-xs">
         <span className="font-bold text-xs tracking-wider text-[#000000] uppercase">
-          {currentView === 'form' ? 'Clinical Wellness Journal' : 'Journal History & Results'}
+          {currentView === 'form' ? 'Wellness Journal' : 'Journal History & Results'}
         </span>
 
         <div className="flex items-center gap-2">
@@ -155,10 +167,21 @@ export default function JournalPage() {
       </header>
 
       {currentView === 'form' ? (
-        <section className="max-w-4xl w-full mx-auto px-6 py-6 flex-1 flex flex-col justify-center overflow-y-auto">
+        <section className="max-w-4xl w-full mx-auto px-6 py-4 flex-1 flex flex-col justify-center overflow-y-auto">
+          
+          {/* Greeting & Date Header */}
+          <div className="mb-4 text-center">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#000000]">
+              {greeting}! Today is {todayFormatted}.
+            </h1>
+            <p className="text-sm md:text-base font-semibold text-[#555555] mt-1">
+              Keep track of your day.
+            </p>
+          </div>
+
           <form onSubmit={handleSave} className="bg-[#FAFAFA] border border-[#000000] rounded-xl p-6 flex flex-col gap-5 shadow-xs">
             <h2 className="text-xs uppercase tracking-widest font-bold border-b border-[#000000] pb-2">
-              Daily Wellness Questionnaire
+              Daily Wellness Journal
             </h2>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-bold">
@@ -289,7 +312,7 @@ export default function JournalPage() {
       )}
 
       <footer className="border-t border-[#E2E8F0] bg-[#FFFFFF] px-4 py-2 text-center text-[10px] text-[#000000] flex justify-between items-center shrink-0">
-        <p className="uppercase tracking-widest font-bold">Clinical Wellness Tracking System</p>
+        <p className="uppercase tracking-widest font-bold">Wellness Tracking System</p>
         <p className="font-mono font-bold">© {new Date().getFullYear()}</p>
       </footer>
 
