@@ -169,12 +169,12 @@ export default function JournalPage() {
       {currentView === 'form' ? (
         <section className="max-w-4xl w-full mx-auto px-6 py-4 flex-1 flex flex-col justify-center overflow-y-auto">
           
-          {/* Greeting & Date Header */}
+          {/* Greeting & Date Header (Made smaller for mobile) */}
           <div className="mb-4 text-center">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#000000]">
+            <h1 className="text-lg md:text-xl font-extrabold tracking-tight text-[#000000]">
               {greeting}! Today is {todayFormatted}.
             </h1>
-            <p className="text-sm md:text-base font-semibold text-[#555555] mt-1">
+            <p className="text-xs md:text-sm font-semibold text-[#555555] mt-0.5">
               Keep track of your day.
             </p>
           </div>
