@@ -101,6 +101,7 @@ export default function PuzzleGame() {
   
   const [secondsElapsed, setSecondsElapsed] = useState<number>(0);
   const [confettiPieces, setConfettiPieces] = useState<ConfettiPiece[]>([]);
+  const [showJournalPrompt, setShowJournalPrompt] = useState<boolean>(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -129,7 +130,7 @@ export default function PuzzleGame() {
   }, []);
 
   useEffect(() => {
-    if (isInitialized && !isWon) {
+    if (isInitialized && !isWon && !showJournalPrompt) {
       intervalRef.current = setInterval(() => {
         setSecondsElapsed((prev) => prev + 1);
       }, 1000);
@@ -140,7 +141,7 @@ export default function PuzzleGame() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isInitialized, isWon]);
+  }, [isInitialized, isWon, showJournalPrompt]);
 
   useEffect(() => {
     if (isWon) {
@@ -243,18 +244,18 @@ export default function PuzzleGame() {
         if (isEndOfBatch) {
           const nextLevel = currentGlobalLevel < 100 ? currentGlobalLevel + 1 : 1;
           localStorage.setItem('puzzle_global_level', nextLevel.toString());
-          router.push('/journal');
+          setShowJournalPrompt(true);
         } else {
           const nextLevel = currentGlobalLevel + 1;
           setCurrentGlobalLevel(nextLevel);
           localStorage.setItem('puzzle_global_level', nextLevel.toString());
         }
-      }, 2200);
+      }, 1800);
     }
-  }, [currentGlobalLevel, router]);
+  }, [currentGlobalLevel]);
 
   const handlePieceClick = (clickedIdx: number) => {
-    if (isWon) return;
+    if (isWon || showJournalPrompt) return;
 
     if (selectedIdx === null) {
       setSelectedIdx(clickedIdx);
@@ -280,7 +281,7 @@ export default function PuzzleGame() {
 
   const handleDrop = (e: React.DragEvent, targetIdx: number) => {
     e.preventDefault();
-    if (isWon) return;
+    if (isWon || showJournalPrompt) return;
     const sourceIdxStr = e.dataTransfer.getData('text/plain');
     if (sourceIdxStr === '') return;
     const sourceIdx = parseInt(sourceIdxStr, 10);
@@ -295,6 +296,16 @@ export default function PuzzleGame() {
     setMoves((prev) => prev + 1);
 
     handleWinSequence(newGrid);
+  };
+
+  const handlePopupResponse = (responseYes: boolean) => {
+    setShowJournalPrompt(false);
+    if (responseYes) {
+      router.push('/journal');
+    } else {
+      // Continue games / reload board for next level
+      setupBoard(currentGlobalLevel);
+    }
   };
 
   const formatTimer = (totalSeconds: number) => {
@@ -333,6 +344,31 @@ export default function PuzzleGame() {
         />
       ))}
 
+      {/* Pop-up Modal after 3 games */}
+      {showJournalPrompt && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#1E293B] border border-white/20 rounded-2xl p-6 max-w-md w-full text-center shadow-2xl flex flex-col gap-6">
+            <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
+              You did great today. Do you want to go to your journal or continue the games?
+            </h2>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => handlePopupResponse(true)}
+                className="flex-1 py-3 bg-[#0284C7] hover:bg-[#0369A1] text-white font-extrabold text-sm uppercase tracking-wider rounded-xl transition shadow-lg"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => handlePopupResponse(false)}
+                className="flex-1 py-3 bg-[#334155] hover:bg-[#475569] text-white font-extrabold text-sm uppercase tracking-wider rounded-xl transition shadow-lg border border-white/10"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating HUD / Overlay Header */}
       <header className="absolute top-0 left-0 right-0 z-30 px-4 py-2 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex justify-between items-center pointer-events-auto">
         <div className="flex items-center gap-3">
@@ -369,10 +405,10 @@ export default function PuzzleGame() {
       <section className="absolute inset-0 w-full h-full p-0 m-0 z-10 flex flex-col">
         
         {/* Win Notification Banner Overlay */}
-        {isWon && (
+        {isWon && !showJournalPrompt && (
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-black/80 backdrop-blur-md px-6 py-2 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
-              🎉 Congratulations! Level complete! Loading next level...
+              🎉 Congratulations! Level complete!
             </span>
           </div>
         )}

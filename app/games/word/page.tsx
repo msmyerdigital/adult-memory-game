@@ -84,6 +84,7 @@ export default function WordGuesserGame() {
   const [activeColIndex, setActiveColIndex] = useState<number>(0);
   const [shakingRow, setShakingRow] = useState<number | null>(null);
   const [showInstructions, setShowInstructions] = useState<boolean>(true);
+  const [showJournalModal, setShowJournalModal] = useState<boolean>(false);
 
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [gamesPlayed, setGamesPlayed] = useState<number>(0);
@@ -313,17 +314,16 @@ export default function WordGuesserGame() {
         const updatedCount = recordGamePlayed(true);
 
         setTimeout(() => {
-          setTimeout(() => {
-            if (updatedCount >= 3) {
-              router.push('/journal');
-              return;
-            }
+          if (updatedCount >= 3) {
+            setShowJournalModal(true);
+            return;
+          }
 
-            const nextLevel = currentGlobalLevel + 1;
-            setCurrentGlobalLevel(nextLevel);
-            localStorage.setItem('word_guesser_global_level', nextLevel.toString());
-          }, 3500);
-        }, 1000);
+          const nextLevel = currentGlobalLevel + 1;
+          setCurrentGlobalLevel(nextLevel);
+          localStorage.setItem('word_guesser_global_level', nextLevel.toString());
+          setupBoard(nextLevel);
+        }, 1500);
 
         return;
       } else if (newGuesses.length >= 6) {
@@ -334,16 +334,16 @@ export default function WordGuesserGame() {
         const updatedCount = recordGamePlayed(false);
 
         setTimeout(() => {
-          setTimeout(() => {
-            if (updatedCount >= 3) {
-              router.push('/journal');
-              return;
-            }
+          if (updatedCount >= 3) {
+            setShowJournalModal(true);
+            return;
+          }
 
-            const lastTry = newGuesses[newGuesses.length - 1];
-            setupBoard(currentGlobalLevel, [lastTry]);
-          }, 3500);
-        }, 1000);
+          const nextLevel = currentGlobalLevel + 1;
+          setCurrentGlobalLevel(nextLevel);
+          localStorage.setItem('word_guesser_global_level', nextLevel.toString());
+          setupBoard(nextLevel);
+        }, 2000);
 
         return;
       }
@@ -462,7 +462,7 @@ export default function WordGuesserGame() {
         </div>
       </header>
 
-      <section className="w-full max-w-md mx-auto my-auto py-4 px-2 z-10 flex flex-col items-center justify-center relative">
+      <section className="w-full max-w-md mx-auto my-auto py-4 px-2 z-10 flex flex-col items-center justify-center relative transition-transform duration-300 sm:translate-y-0 -translate-y-12">
         {showInstructions && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
             <div className="w-full max-w-[340px] sm:max-w-[390px] bg-white backdrop-blur-xl p-5 rounded-3xl border border-slate-200 shadow-2xl flex flex-col gap-3 text-xs text-slate-700">
@@ -486,10 +486,41 @@ export default function WordGuesserGame() {
           </div>
         )}
 
-        {isCompletedState && (
+        {showJournalModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="w-full max-w-[340px] bg-white p-6 rounded-3xl border border-slate-200 shadow-2xl flex flex-col gap-4 text-center">
+              <div className="text-lg font-black text-slate-900">
+                Congratulations, you did great!
+              </div>
+              <p className="text-xs text-slate-600">
+                Would you like to go to journal?
+              </p>
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() => router.push('/journal')}
+                  className="flex-1 py-2.5 bg-[#059669] hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition shadow-md"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => {
+                    setShowJournalModal(false);
+                    setSessionLevelsPlayed(0);
+                    setupBoard(currentGlobalLevel);
+                  }}
+                  className="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black text-xs uppercase tracking-wider rounded-xl transition shadow-sm"
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCompletedState && !showJournalModal && (
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur-md px-6 py-2.5 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce whitespace-nowrap">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
-              {gameStatus === 'won' ? '🎉 Word guessed! Loading next level...' : `The word was ${activeWord}`}
+              {gameStatus === 'won' ? '🎉 Word guessed!' : `The word was ${activeWord}`}
             </span>
           </div>
         )}
@@ -540,7 +571,7 @@ export default function WordGuesserGame() {
       </section>
 
       <footer className="w-full max-w-md mx-auto p-4 z-30 flex justify-between items-center text-xs font-bold text-slate-600 shrink-0">
-        <span>{message || `Session Level: ${sessionLevelsPlayed + 1} / 3`}</span>
+        <span>{message || `Session Game: ${sessionLevelsPlayed + 1} / 3`}</span>
         <Link className="text-[#2563EB] hover:text-blue-700 transition" href="/games">
           ← Games
         </Link>

@@ -16,6 +16,7 @@ export default function MathPyramidGame() {
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [isWon, setIsWon] = useState<boolean>(false);
   const [isCompletedState, setIsCompletedState] = useState<boolean>(false);
+  const [showJournalPrompt, setShowJournalPrompt] = useState<boolean>(false);
 
   // Statistics state
   const [totalPoints, setTotalPoints] = useState<number>(0);
@@ -44,28 +45,19 @@ export default function MathPyramidGame() {
     setIsInitialized(true);
   }, []);
 
-  // Setup Math Pyramid board
+  // Setup Math Pyramid board with tougher, longer strings / larger layouts
   const setupBoard = (lvlNum: number) => {
-    const isFirstFour = lvlNum <= 4;
-    const useMultiplication = lvlNum > 10;
+    const useMultiplication = lvlNum > 5;
     
-    const rows = lvlNum <= 10 ? 3 : 4;
+    // Increased pyramid height for a longer, more challenging string of blocks
+    const rows = lvlNum <= 5 ? 4 : 5;
 
     const bottomRowSize = rows;
     const bottomRow: number[] = [];
     
     for (let i = 0; i < bottomRowSize; i++) {
-      let maxVal = 5;
-      if (isFirstFour) {
-        maxVal = 3 + lvlNum;
-      } else if (lvlNum <= 10) {
-        maxVal = 6;
-      } else if (lvlNum <= 40) {
-        maxVal = 7;
-      } else {
-        maxVal = 9;
-      }
-      bottomRow.push(Math.floor(Math.random() * maxVal) + 1);
+      let maxVal = 8 + Math.floor(lvlNum / 10);
+      bottomRow.push(Math.floor(Math.random() * maxVal) + 2);
     }
 
     const fullPyramid: number[][] = [bottomRow];
@@ -86,10 +78,8 @@ export default function MathPyramidGame() {
     const mask = solvedPyramid.map((row) => row.map(() => true));
     let hiddenCount = 0;
     
-    let targetHidden = 2;
-    if (lvlNum > 4 && lvlNum <= 10) targetHidden = 3;
-    else if (lvlNum > 10 && lvlNum <= 40) targetHidden = 4;
-    else if (lvlNum > 40) targetHidden = 5;
+    // Hide more blocks to make it significantly more challenging
+    let targetHidden = lvlNum <= 5 ? 4 : 7;
 
     while (hiddenCount < targetHidden) {
       const r = Math.floor(Math.random() * solvedPyramid.length);
@@ -235,17 +225,16 @@ export default function MathPyramidGame() {
         });
 
         setTimeout(() => {
-          const remainderInBatch = currentGlobalLevel % 3;
+          const remainderInBatch = currentGlobalLevel % 4; // Trigger every 4 games
           const isEndOfBatch = remainderInBatch === 0 || currentGlobalLevel === 100;
 
+          const nextLevel = currentGlobalLevel < 100 ? currentGlobalLevel + 1 : 1;
+          localStorage.setItem('pyramid_global_level', nextLevel.toString());
+
           if (isEndOfBatch) {
-            const nextLevel = currentGlobalLevel < 100 ? currentGlobalLevel + 1 : 1;
-            localStorage.setItem('pyramid_global_level', nextLevel.toString());
-            router.push('/journal');
+            setShowJournalPrompt(true);
           } else {
-            const nextLevel = currentGlobalLevel + 1;
             setCurrentGlobalLevel(nextLevel);
-            localStorage.setItem('pyramid_global_level', nextLevel.toString());
           }
         }, 3500);
       }, 3500);
@@ -253,7 +242,7 @@ export default function MathPyramidGame() {
   };
 
   const handleKeyPress = (key: string) => {
-    if (!selectedCell || isWon || isCompletedState) return;
+    if (!selectedCell || isWon || isCompletedState || showJournalPrompt) return;
 
     if (/^[0-9]$/.test(key)) {
       const nextInput = userInput + key;
@@ -284,7 +273,7 @@ export default function MathPyramidGame() {
       if (e.key >= '0' && e.key <= '9') {
         handleKeyPress(e.key);
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
-        if (selectedCell && !isWon && !isCompletedState) {
+        if (selectedCell && !isWon && !isCompletedState && !showJournalPrompt) {
           setUserInput((prev) => prev.slice(0, -1));
         }
       }
@@ -292,12 +281,22 @@ export default function MathPyramidGame() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedCell, userInput, pyramid, hiddenMask, isWon, isCompletedState]);
+  }, [selectedCell, userInput, pyramid, hiddenMask, isWon, isCompletedState, showJournalPrompt]);
 
   const handleCellClick = (r: number, c: number) => {
-    if (isWon || isCompletedState || hiddenMask[r][c]) return;
+    if (isWon || isCompletedState || hiddenMask[r][c] || showJournalPrompt) return;
     setSelectedCell({ row: r, col: c });
     setUserInput('');
+  };
+
+  const handlePopupResponse = (responseYes: boolean) => {
+    setShowJournalPrompt(false);
+    if (responseYes) {
+      router.push('/journal');
+    } else {
+      const nextLevel = currentGlobalLevel < 100 ? currentGlobalLevel + 1 : 1;
+      setCurrentGlobalLevel(nextLevel);
+    }
   };
 
   if (!isInitialized) return null;
@@ -307,6 +306,31 @@ export default function MathPyramidGame() {
   return (
     <main className="h-dvh w-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between overflow-hidden box-border select-none relative p-3">
       
+      {/* Pop-up Modal after 4 games */}
+      {showJournalPrompt && (
+        <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-center shadow-2xl flex flex-col gap-6">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
+              You did great today. Do you want to go to your journal or continue the games?
+            </h2>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => handlePopupResponse(true)}
+                className="flex-1 py-3 bg-[#0284C7] hover:bg-[#0369A1] text-white font-extrabold text-sm uppercase tracking-wider rounded-xl transition shadow-lg"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => handlePopupResponse(false)}
+                className="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold text-sm uppercase tracking-wider rounded-xl transition shadow-lg border border-slate-300"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating HUD / Overlay Header */}
       <header className="absolute top-0 left-0 right-0 z-30 px-4 py-2 bg-gradient-to-b from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex justify-between items-center pointer-events-auto">
         <div className="flex items-center gap-3">
@@ -338,11 +362,11 @@ export default function MathPyramidGame() {
         </div>
       </header>
 
-      {/* Main Game Section with compact vertical footprint */}
+      {/* Main Game Section */}
       <section className="absolute inset-0 w-full h-full pt-14 pb-36 px-4 z-10 flex flex-col items-center justify-center">
         
         {/* Win Notification Banner Overlay */}
-        {isWon && (
+        {isWon && !showJournalPrompt && (
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 bg-white/90 backdrop-blur-md px-6 py-2 rounded-full border border-[#059669]/50 shadow-2xl animate-bounce">
             <span className="text-xs sm:text-sm font-black text-[#059669]">
               🎉 Congratulations! Level complete! Loading next level...
@@ -350,16 +374,16 @@ export default function MathPyramidGame() {
           </div>
         )}
 
-        {/* Pyramid Board Container (Scaled down with compact cell sizing) */}
-        <div className={`flex flex-col items-center justify-center gap-2 w-full max-w-xs sm:max-w-sm bg-white/80 backdrop-blur-xl p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
+        {/* Pyramid Board Container */}
+        <div className={`flex flex-col items-center justify-center gap-1.5 w-full max-w-sm bg-white/80 backdrop-blur-xl p-3 sm:p-4 rounded-3xl border border-slate-200 shadow-xl ${isCompletedState ? 'animate-pulse scale-105 transition-transform duration-500' : ''}`}>
           
           <div className="text-center mb-1">
-            <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Math Pyramid</h2>
-            <p className="text-[11px] text-slate-500">Each number is the sum or product of the two blocks below.</p>
+            <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Math Pyramid (Challenging)</h2>
+            <p className="text-[10px] text-slate-500">Adjacent blocks add or multiply to form the block above.</p>
           </div>
 
           {pyramid.map((row, rIdx) => (
-            <div key={rIdx} className="flex gap-2 justify-center w-full">
+            <div key={rIdx} className="flex gap-1.5 justify-center w-full">
               {row.map((val, cIdx) => {
                 const isVisible = hiddenMask[rIdx][cIdx];
                 const isSelected = selectedCell?.row === rIdx && selectedCell?.col === cIdx;
@@ -368,7 +392,7 @@ export default function MathPyramidGame() {
                   <button
                     key={cIdx}
                     onClick={() => handleCellClick(rIdx, cIdx)}
-                    className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-black text-xl transition-all shadow-sm ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-black text-lg transition-all shadow-sm ${
                       isVisible
                         ? `${isCompletedState ? 'animate-bounce text-white bg-[#059669] border border-[#059669]/50' : 'bg-slate-100 text-slate-800 border border-slate-200'} cursor-default`
                         : isSelected
@@ -386,14 +410,14 @@ export default function MathPyramidGame() {
 
       </section>
 
-      {/* Universal Number Keypad & Footer anchored securely at bottom */}
+      {/* Universal Number Keypad & Footer */}
       <footer className="absolute bottom-0 left-0 right-0 z-30 p-3 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent flex flex-col items-center gap-2 pointer-events-auto">
         <div className="w-full max-w-xs grid grid-cols-5 gap-1.5">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
             <button
               key={num}
               onClick={() => handleKeyPress(num.toString())}
-              disabled={!selectedCell || isWon || isCompletedState}
+              disabled={!selectedCell || isWon || isCompletedState || showJournalPrompt}
               className="bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-800 font-extrabold text-base py-2 rounded-xl border border-slate-200 shadow-md transition-all disabled:opacity-30 cursor-pointer"
             >
               {num}
