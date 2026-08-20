@@ -27,4 +27,8 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+}export const metadata = {
+  title: 'Free Brain Gain Portal',
+  description: 'Train your mind and elevate focus.',
+  manifest: '/manifest.json',
+};
