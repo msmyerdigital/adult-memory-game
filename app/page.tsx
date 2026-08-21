@@ -11,6 +11,13 @@ export default function HomeLandingPage() {
   useEffect(() => {
     setIsMounted(true);
 
+    // Register Service Worker for Desktop & Mobile PWA support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('Service Worker registered successfully', reg))
+        .catch((err) => console.log('Service Worker registration failed', err));
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -36,7 +43,7 @@ export default function HomeLandingPage() {
       }
       setDeferredPrompt(null);
     } else {
-      alert("To save this app, use your browser menu or press Ctrl+D (Cmd+D on Mac) to bookmark it!");
+      alert("To save this app on desktop, click the install icon in your browser's address bar or use your browser menu!");
     }
   };
 
