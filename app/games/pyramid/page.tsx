@@ -311,7 +311,7 @@ export default function MathPyramidGame() {
         <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-center shadow-2xl flex flex-col gap-6">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
-              You did great today. Do you want to go to your journal or continue the games?
+              You did great today. Do you want to go to your journal?
             </h2>
             <div className="flex gap-4 justify-center">
               <button
