@@ -6,8 +6,11 @@ import Link from 'next/link';
 export default function HomeLandingPage() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsMounted(true);
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -58,7 +61,7 @@ export default function HomeLandingPage() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {!isInstalled && (
+          {isMounted && !isInstalled && (
             <button 
               onClick={handleInstallClick}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
@@ -105,7 +108,7 @@ export default function HomeLandingPage() {
             </div>
           </div>
 
-          {/* Quick Hub Grid - Entire Box Clickable Links */}
+          {/* Quick Hub Grid */}
           <div id="games" className="md:col-span-5 grid grid-cols-2 gap-4">
             <Link href="/games" className="bg-[#FFFFFF] border border-[#E2E8F0] p-4 rounded-xl shadow-xs hover:border-[#2563EB] hover:shadow-md transition group block">
               <h3 className="font-bold text-sm text-[#0F172A] group-hover:text-[#2563EB] transition">Piano Memory</h3>
@@ -131,7 +134,7 @@ export default function HomeLandingPage() {
         </div>
       </section>
 
-      {/* Visual Game Samples Section - Clickable Boxes with Original Graphic UI Previews */}
+      {/* Visual Game Samples Section */}
       <section id="samples" className="py-16 bg-[#F1F5F9] border-y border-[#E2E8F0] px-4 sm:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-12">
@@ -142,7 +145,6 @@ export default function HomeLandingPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             
-            {/* Sample 1: Piano Memory (Clickable Link) */}
             <Link href="/games" className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between group block">
               <div>
                 <div className="flex justify-between items-center mb-4">
@@ -161,7 +163,6 @@ export default function HomeLandingPage() {
               </div>
             </Link>
 
-            {/* Sample 2: Word Search Grid (Clickable Link) */}
             <Link href="/games" className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-xl p-6 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between group block">
               <div>
                 <div className="flex justify-between items-center mb-4">
@@ -192,7 +193,7 @@ export default function HomeLandingPage() {
         </div>
       </section>
 
-      {/* Small Article Section: Why This Is Good For You */}
+      {/* Benefits Section */}
       <section id="benefits" className="py-16 px-4 sm:px-8 max-w-4xl mx-auto">
         <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-2xl p-8 sm:p-12 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#059669] bg-[#ECFDF5] px-3 py-1 rounded-full">
@@ -214,7 +215,7 @@ export default function HomeLandingPage() {
         </div>
       </section>
 
-      {/* 100% Free Guarantee Section */}
+      {/* Free Guarantee Section */}
       <section id="free" className="py-16 bg-[#ECFDF5]/60 border-y border-[#A7F3D0] px-4 sm:px-8 text-center">
         <div className="max-w-2xl mx-auto space-y-4">
           <span className="text-xs font-bold uppercase tracking-[0.2em] bg-[#059669] text-[#FFFFFF] px-3 py-1 rounded-full">
@@ -240,7 +241,7 @@ export default function HomeLandingPage() {
         </div>
       </section>
 
-      {/* Separate Contact Section */}
+      {/* Contact Section */}
       <section id="contact" className="py-16 px-4 sm:px-8 max-w-3xl mx-auto text-center">
         <div className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-2xl p-8 shadow-sm space-y-4">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#2563EB]">Get In Touch</span>
