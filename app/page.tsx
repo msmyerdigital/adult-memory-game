@@ -43,13 +43,19 @@ export default function HomeLandingPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between">
       
-      {/* Top Professional Navigation Header */}
+      {/* Top Professional Navigation Header with SVG Logo */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF]/90 backdrop-blur-md px-4 sm:px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-xs">
         <div className="flex items-center gap-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span>
-          <span className="font-extrabold text-sm sm:text-base tracking-tight text-[#0F172A]">
-            Free Brain Gain <span className="text-[#2563EB]">Portal</span>
-          </span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <img 
+              src="/logo.svg" 
+              alt="Free Brain Gain Logo" 
+              className="w-8 h-8 rounded-lg shadow-sm group-hover:scale-105 transition" 
+            />
+            <span className="font-extrabold text-sm sm:text-base tracking-tight text-[#0F172A]">
+              Free Brain Gain <span className="text-[#2563EB]">Portal</span>
+            </span>
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-[#64748B]">
@@ -60,14 +66,14 @@ export default function HomeLandingPage() {
           <a href="#contact" className="hover:text-[#2563EB] transition">Contact</a>
         </nav>
 
-        {/* Buttons Group: Save App placed directly before Play Now */}
+        {/* Buttons Group: Save App with Triangle icon placed before Play Now */}
         <div className="flex items-center gap-2 sm:gap-3">
           {isMounted && !isInstalled && (
             <button 
               onClick={handleInstallClick}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-2xs"
             >
-              📥 Save App
+              <span>▲</span> Save App
             </button>
           )}
 
