@@ -60,15 +60,17 @@ export default function HomeLandingPage() {
           <a href="#contact" className="hover:text-[#2563EB] transition">Contact</a>
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Buttons Group: Save App placed directly before Play Now */}
+        <div className="flex items-center gap-2 sm:gap-3">
           {isMounted && !isInstalled && (
             <button 
               onClick={handleInstallClick}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-bold text-xs uppercase tracking-wider rounded transition"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] border border-[#CBD5E1] font-extrabold text-xs uppercase tracking-wider rounded transition shadow-2xs"
             >
-              Save App
+              📥 Save App
             </button>
           )}
+
           <Link 
             href="/games" 
             className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-widest rounded transition shadow-sm"
