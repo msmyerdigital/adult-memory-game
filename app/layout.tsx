@@ -1,34 +1,22 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'Free Brain Gain',
-  description: 'The Daily Mental Routine to Keep Your Brain Sharp',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Free Brain Gain',
-  },
+  title: "Free Brain Gain Portal",
+  description: "Train your mind and elevate focus.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         {children}
       </body>
     </html>
   );
-}export const metadata = {
-  title: 'Free Brain Gain Portal',
-  description: 'Train your mind and elevate focus.',
-  manifest: '/manifest.json',
-};
+}
