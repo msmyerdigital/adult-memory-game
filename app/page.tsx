@@ -43,7 +43,7 @@ export default function HomeLandingPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-[#2563EB] selection:text-[#FFFFFF] flex flex-col justify-between">
       
-      {/* Top Professional Navigation Header with SVG Logo */}
+      {/* Top Professional Navigation Header with SVG Logo and Save App Button */}
       <header className="border-b border-[#E2E8F0] bg-[#FFFFFF]/90 backdrop-blur-md px-4 sm:px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-xs">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -63,10 +63,11 @@ export default function HomeLandingPage() {
           <a href="#samples" className="hover:text-[#2563EB] transition">Previews</a>
           <a href="#benefits" className="hover:text-[#2563EB] transition">Why It's Good</a>
           <a href="#free" className="hover:text-[#059669] transition">100% Free</a>
+          <a href="#download-app" className="hover:text-[#2563EB] transition">Save App</a>
           <a href="#contact" className="hover:text-[#2563EB] transition">Contact</a>
         </nav>
 
-        {/* Buttons Group: Save App with Triangle icon placed before Play Now */}
+        {/* Buttons Group: Save App placed before Play Now */}
         <div className="flex items-center gap-2 sm:gap-3">
           {isMounted && !isInstalled && (
             <button 
@@ -245,6 +246,38 @@ export default function HomeLandingPage() {
             >
               Start Playing For Free Now ➔
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Dedicated Download / Save The App Section */}
+      <section id="download-app" className="py-16 px-4 sm:px-8 max-w-4xl mx-auto">
+        <div className="bg-[#0F172A] text-[#FFFFFF] rounded-2xl p-8 sm:p-12 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 text-left">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] bg-[#2563EB] text-white px-3 py-1 rounded-full">
+              PWA Ready
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              Take Free Brain Gain With You Everywhere
+            </h2>
+            <p className="text-[#94A3B8] text-sm leading-relaxed max-w-xl">
+              Install our portal directly to your phone, tablet, or desktop home screen for instant one-tap access—no app store required!
+            </p>
+          </div>
+
+          <div className="shrink-0">
+            {isMounted && !isInstalled ? (
+              <button 
+                onClick={handleInstallClick}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-[#FFFFFF] font-extrabold text-xs uppercase tracking-[0.2em] rounded-xl shadow-md transition"
+              >
+                <span>▲</span> Save App Now
+              </button>
+            ) : (
+              <div className="px-6 py-3 bg-[#1E293B] border border-[#334155] text-[#34D399] text-xs font-bold uppercase tracking-widest rounded-xl">
+                ✓ App Installed & Ready
+              </div>
+            )}
           </div>
         </div>
       </section>
